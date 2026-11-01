@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C7480">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Métré Film">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Métré Film Vitrage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout : outil de chantier, onglets collants en haut, une colonne sur mobile, contenu max 980px */
+:root{
+  --bg:#EDF1F0; --surface:#FFFFFF; --sunk:#E3E9E8; --ink:#14232A; --muted:#5A6B70; --line:#CFD9D7;
+  --accent:#0C7480; --accent-ink:#FFFFFF; --accent-soft:#D3ECEE; --mark:#C98A00; --warn:#B4461B; --int:#6B5BA8; --int-soft:#E6E1F4;
+  --paper:#FFFFFF; --paper-ink:#14232A;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E161A; --surface:#162227; --sunk:#111B1F; --ink:#E2EBEB; --muted:#8FA3A7; --line:#283A40;
+  --accent:#3DBFCA; --accent-ink:#04252A; --accent-soft:#163B40; --mark:#F0B429; --warn:#F07B4F; --int:#A897E6; --int-soft:#2A2545;
+  --paper:#1B2A30; --paper-ink:#E2EBEB; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E161A; --surface:#162227; --sunk:#111B1F; --ink:#E2EBEB; --muted:#8FA3A7; --line:#283A40;
+  --accent:#3DBFCA; --accent-ink:#04252A; --accent-soft:#163B40; --mark:#F0B429; --warn:#F07B4F; --int:#A897E6; --int-soft:#2A2545;
+  --paper:#1B2A30; --paper-ink:#E2EBEB; color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font:15px/1.5 var(--f-body);margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+header.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.brand{display:flex;align-items:baseline;gap:10px;padding-block:12px 4px}
+.brand h1{font:700 26px/1 var(--f-display);letter-spacing:.02em;margin:0;text-transform:uppercase}
+.brand span{color:var(--muted);font-size:13px}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{flex:0 0 auto;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);font:600 17px/1 var(--f-display);letter-spacing:.04em;text-transform:uppercase;padding:10px 10px 9px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,label.btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+section.tab{display:grid;gap:18px;padding-top:18px}
+h2{font:700 22px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;margin:0;text-wrap:balance}
+h3{font:600 16px/1.2 var(--f-body);margin:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;min-width:0}
+.hint{color:var(--muted);font-size:13px;margin:0;max-width:65ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px}
+label.f{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.03em;text-transform:uppercase}
+input,select,textarea{font:15px var(--f-body);color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;box-sizing:border-box;min-width:0}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:var(--accent);padding:0}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:600 14px var(--f-body);border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 14px;cursor:pointer;min-height:40px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:none}
+.btn.danger{color:var(--warn)}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.banner{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:13px;margin:0}
+.warnbox{background:var(--sunk);border:1px solid var(--warn);color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.kpi{background:var(--surface);padding:10px 12px}
+.kpi b{display:block;font:500 20px/1.2 var(--f-mono);font-variant-numeric:tabular-nums}
+.kpi small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.zones{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.zone{flex:0 0 auto;display:grid;gap:2px;text-align:left;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;background:var(--surface);color:var(--ink);padding:8px 12px;cursor:pointer;font:inherit;min-width:140px}
+.zone.int{border-left-color:var(--int)}
+.zone[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.zone.int[aria-pressed="true"]{background:var(--int-soft);border-color:var(--int)}
+.zone b{font-weight:600;font-size:14px}
+.zone small{color:var(--muted);font-size:12px}
+.zone.add{border-left-width:1px;border-style:dashed;place-content:center;color:var(--muted);min-width:90px}
+.tag{display:inline-block;font:600 11px/1 var(--f-body);text-transform:uppercase;letter-spacing:.05em;padding:3px 6px;border-radius:4px;background:var(--accent-soft);color:var(--ink)}
+.tag.int{background:var(--int-soft)}
+.stage{position:relative;border-radius:8px;overflow:hidden;background:var(--sunk);border:1px solid var(--line)}
+#cv{display:block;width:100%;height:auto}
+.calib{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;background:var(--sunk);border:1px dashed var(--mark);border-radius:8px;padding:10px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:8px;background:var(--sunk);white-space:nowrap}
+td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:middle}
+td input,td select{padding:6px 8px;font-size:14px}
+td.r,th.r{text-align:right}
+tr.grp td{background:var(--sunk);font-weight:600;font-size:13px}
+.w-sm{width:78px}.w-xs{width:58px}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;white-space:nowrap}
+.chip.est{background:var(--sunk);color:var(--muted);border:1px dashed var(--line)}
+.chip.mes{background:var(--accent-soft);color:var(--ink)}
+.chip.miss{color:var(--warn);border:1px solid var(--warn)}
+tr.off td{opacity:.5}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.mode{display:grid;gap:10px;border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--surface);cursor:pointer}
+.mode.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.mode header{display:flex;gap:10px;align-items:flex-start}
+.mode p{margin:0;font-size:13px;color:var(--muted)}
+svg text{font-family:var(--f-mono);font-size:11px}
+.roll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--sunk);padding:10px}
+.doc{background:var(--paper);color:var(--paper-ink);border:1px solid var(--line);border-radius:4px;padding:22px;display:grid;gap:16px;font-size:14px;min-width:0}
+.doc .dh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
+.doc .dh h3{font:700 24px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em}
+.doc .meta{font-size:13px;color:var(--muted);line-height:1.6}
+.doc table td,.doc table th{padding:7px 8px}
+.tot{margin-left:auto;display:grid;grid-template-columns:auto auto;gap:4px 24px;font-variant-numeric:tabular-nums;min-width:min(100%,280px)}
+.tot .big{font:700 18px var(--f-body);border-top:2px solid var(--paper-ink);padding-top:6px}
+.notice{display:grid;gap:14px}
+.notice details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.notice details[open] summary{margin-bottom:10px}
+.notice summary{font:700 19px/1.2 var(--f-display);text-transform:uppercase;letter-spacing:.03em;list-style-position:outside}
+.notice ol,.notice ul{margin:0;padding-left:22px;display:grid;gap:6px;max-width:68ch}
+.notice p{margin:0 0 8px;max-width:68ch}
+.notice b.k{font-weight:600;background:var(--sunk);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:13px;white-space:nowrap}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.04em}
+.flow span{background:var(--accent-soft);border-radius:6px;padding:5px 10px}
+.flow i{color:var(--muted);font-style:normal}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+.hist{display:grid;gap:6px}
+.hist button{text-align:left;justify-content:space-between;width:100%}
+details summary{cursor:pointer;font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap" style="padding-block:0">
+    <div class="brand"><h1>Métré Film</h1><span>Devis film pour vitrage</span></div>
+    <nav class="tabs" role="tablist">
+      <button data-tab="chantier" aria-selected="true">Chantier</button>
+      <button data-tab="pose">Pose</button>
+      <button data-tab="calepinage">Calepinage</button>
+      <button data-tab="films">Films</button>
+      <button data-tab="devis">Devis</button>
+      <button data-tab="notice">Notice</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+<!-- CHANTIER -->
+<section class="tab" id="t-chantier">
+  <div class="panel">
+    <h2>Client &amp; chantier</h2>
+    <div class="grid2">
+      <label class="f">Nom du client<input id="c-nom" data-k="client.nom"></label>
+      <label class="f">Téléphone<input id="c-tel" data-k="client.tel" inputmode="tel"></label>
+      <label class="f">Adresse du client<input id="c-adr" data-k="client.adresse"></label>
+      <label class="f">Adresse du chantier<input id="c-chantier" data-k="client.chantier"></label>
+      <label class="f">E-mail<input id="c-mail" data-k="client.email" inputmode="email"></label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Zones du chantier</h2>
+    <p class="hint">Une zone par façade ou par pièce intérieure. Chaque zone a sa photo, son étalonnage, ses vitrages et son film.</p>
+    <div class="zones" id="zones"></div>
+    <div class="grid2">
+      <label class="f">Nom de la zone<input id="z-nom"></label>
+      <label class="f">Emplacement
+        <select id="z-type"><option value="ext">Extérieur (façade)</option><option value="int">Intérieur</option></select></label>
+      <label class="f">Film posé dans cette zone<select id="z-film"></select></label>
+    </div>
+    <div class="row"><button class="btn ghost danger" id="z-del">Supprimer la zone</button></div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <h2 id="photo-title">Photo</h2>
+      <div class="row">
+        <label class="btn primary" for="f-cam">Prendre une photo</label>
+        <input id="f-cam" type="file" accept="image/*" capture="environment" hidden>
+        <label class="btn" for="f-imp">Importer</label>
+        <input id="f-imp" type="file" accept="image/*" hidden>
+      </div>
+    </div>
+    <div class="banner" id="sample-banner">Photo d'exemple pour la démonstration. Prenez votre photo pour commencer un vrai métré.</div>
+    <div class="row" role="group" aria-label="Outil">
+      <button class="btn" data-mode="select" aria-pressed="true">Sélectionner</button>
+      <button class="btn" data-mode="rectify" aria-pressed="false">Redresser (4 coins)</button>
+      <button class="btn" data-mode="draw" aria-pressed="false">Tracer un vitrage</button>
+      <button class="btn" data-mode="grid" aria-pressed="false">Répéter</button>
+      <button class="btn" data-mode="calib" aria-pressed="false">Étalonner (trait)</button>
+    </div>
+    <p class="hint" id="mode-hint"></p>
+    <div class="stage"><canvas id="cv"></canvas></div>
+    <div class="calib" id="rect-box" hidden style="grid-template-columns:1fr 1fr">
+      <label class="f">Largeur réelle (cm)<input id="rect-w" type="number" inputmode="decimal" min="1" step="0.1"></label>
+      <label class="f">Hauteur réelle (cm)<input id="rect-h" type="number" inputmode="decimal" min="1" step="0.1"></label>
+      <div class="row" style="grid-column:1/-1"><button class="btn primary" id="rect-ok">Redresser la photo</button><button class="btn ghost" id="rect-reset">Recommencer les points</button></div>
+    </div>
+    <div class="calib" id="grid-box" hidden style="grid-template-columns:1fr 1fr">
+      <label class="f">Colonnes (fenêtres par étage)<input id="g-cols" type="number" min="1" value="5"></label>
+      <label class="f">Rangées (étages)<input id="g-rows" type="number" min="1" value="4"></label>
+    </div>
+    <div class="row" id="orig-row" hidden><span class="tag">Photo redressée</span><button class="btn ghost" id="rect-undo">Revenir à la photo d'origine</button></div>
+    <div class="calib" id="calib-box" hidden>
+      <label class="f">Longueur réelle du segment tracé (cm)<input id="calib-cm" type="number" inputmode="decimal" min="1" step="0.1"></label>
+      <button class="btn primary" id="calib-ok">Valider</button>
+    </div>
+    <p class="hint" id="scale-info"></p>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <h2 id="win-title">Vitrages</h2>
+      <div class="row">
+        <button class="btn ghost" id="sel-all">Tout cocher</button>
+        <button class="btn ghost" id="sel-none">Tout décocher</button>
+        <button class="btn" id="add-win">+ Vitrage saisi</button>
+      </div>
+    </div>
+    <p class="hint">Mesurez un seul vitrage de chaque modèle, saisissez sa cote, puis touchez ≈ pour la copier sur tous les vitrages de même taille de la zone.</p>
+    <p class="banner warnbox" id="usine-warn" hidden></p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Devis</th><th>Repère</th><th class="r">Larg. cm</th><th class="r">Haut. cm</th><th class="r">Qté</th><th>Source</th><th></th></tr></thead>
+      <tbody id="win-body"></tbody>
+    </table></div>
+    <p class="hint" id="zone-sum"></p>
+    <div class="kpis" id="kpi-chantier"></div>
+  </div>
+</section>
+
+<!-- POSE -->
+<section class="tab" id="t-pose" hidden>
+  <div class="panel">
+    <h2>Option de pose</h2>
+    <div class="modes">
+      <div class="mode" data-pose="usine">
+        <header><input type="radio" name="pose" id="pose-usine" value="usine"><div><h3><label for="pose-usine">Coupe usine</label></h3><p>Film découpé à l'atelier, plus court que le vitrage pour laisser un jeu au joint. Pose rapide, pas de coupe sur la vitre.</p></div></header>
+        <label class="f">Jeu par côté (mm, film plus court)<input id="p-jeu" type="number" step="0.5" min="0" data-k="pose.jeu" data-num></label>
+        <label class="f">Prix de pose €/m² HT<input id="p-prix-usine" type="number" step="0.5" min="0" data-k="pose.prixUsine" data-num></label>
+      </div>
+      <div class="mode" data-pose="surplace">
+        <header><input type="radio" name="pose" id="pose-surplace" value="surplace"><div><h3><label for="pose-surplace">Coupe sur place – finition</label></h3><p>Film préparé avant avec un surplus sur chaque côté, puis arasé au cutter sur le vitrage. Finition au plus près du joint.</p></div></header>
+        <label class="f">Surplus par côté (mm, 10 à 20 conseillé)<input id="p-surplus" type="number" step="1" min="0" data-k="pose.surplus" data-num></label>
+        <label class="f">Prix de pose €/m² HT<input id="p-prix-sp" type="number" step="0.5" min="0" data-k="pose.prixSurPlace" data-num></label>
+      </div>
+    </div>
+    <p class="banner warnbox" id="pose-warn" hidden></p>
+    <svg id="pose-svg" viewBox="0 0 360 200" style="max-width:100%;height:auto" role="img" aria-label="Schéma du film par rapport au vitrage"></svg>
+  </div>
+  <div class="panel">
+    <h2>Intérieur / extérieur</h2>
+    <div class="grid2">
+      <label class="f">Supplément pose en extérieur (€/m² HT)<input id="p-supext" type="number" step="0.5" min="0" data-k="pose.supExt" data-num></label>
+      <label class="f">Supplément pose en intérieur (€/m² HT)<input id="p-supint" type="number" step="0.5" min="0" data-k="pose.supInt" data-num></label>
+    </div>
+    <p class="hint">S'ajoute au prix de pose selon l'emplacement de chaque zone (accès, météo, film extérieur plus long à poser).</p>
+  </div>
+  <div class="panel">
+    <h2>Base de facturation</h2>
+    <div class="grid2">
+      <label class="f">Fourniture facturée sur
+        <select id="p-base" data-k="pose.base">
+          <option value="film">Surface de film découpé</option>
+          <option value="vitrage">Surface de vitrage</option>
+          <option value="rouleau">Rouleau consommé (chutes incluses)</option>
+        </select></label>
+      <label class="f">Surface minimum par vitrage (m²)<input id="p-min" type="number" step="0.05" min="0" data-k="pose.min" data-num></label>
+    </div>
+    <p class="hint">La pose est toujours facturée sur la surface de vitrage. Le minimum s'applique aux petits vitrages (impostes, jours fixes).</p>
+    <div class="kpis" id="kpi-pose"></div>
+  </div>
+</section>
+
+<!-- CALEPINAGE -->
+<section class="tab" id="t-calepinage" hidden>
+  <div class="panel">
+    <h2>Rouleau &amp; sens de coupe</h2>
+    <p class="hint">La <b>laize</b> est la largeur du rouleau. Chaque pièce se place soit avec sa largeur dans la laize (lés verticaux, la hauteur se déroule), soit couchée (lés horizontaux). Si une pièce dépasse la laize, elle est coupée en plusieurs lés raccordés. Un plan de coupe est calculé par film, toutes zones confondues.</p>
+    <div class="grid2">
+      <label class="f">Sens de pose
+        <select id="r-sens" data-k="roll.sens">
+          <option value="auto">Optimisé (moins de métrage)</option>
+          <option value="vertical">Lés verticaux imposés</option>
+          <option value="horizontal">Lés horizontaux imposés</option>
+        </select></label>
+      <label class="f">Recouvrement entre lés (mm, 0 = bord à bord)<input id="r-rec" type="number" min="0" step="1" data-k="roll.rec" data-num></label>
+      <label class="f">Espace de coupe entre pièces (mm)<input id="r-gap" type="number" min="0" step="1" data-k="roll.gap" data-num></label>
+    </div>
+  </div>
+  <div id="roll-groups" style="display:grid;gap:18px"></div>
+</section>
+
+<!-- FILMS -->
+<section class="tab" id="t-films" hidden>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><h2>Base de films</h2><button class="btn" id="add-film">+ Film</button></div>
+    <p class="hint">Prix de fourniture au m² HT. Les films listés sont des exemples à remplacer par vos références et tarifs. Le film coché est proposé par défaut pour les nouvelles zones.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Défaut</th><th>Référence</th><th>Type</th><th class="r">Laize cm</th><th class="r">Rouleau m</th><th class="r">€/m² HT</th><th></th></tr></thead>
+      <tbody id="film-body"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- DEVIS -->
+<section class="tab" id="t-devis" hidden>
+  <div class="panel">
+    <h2>Paramètres du devis</h2>
+    <div class="grid2">
+      <label class="f">N° de devis<input id="d-num" data-k="devis.num"></label>
+      <label class="f">Date<input id="d-date" type="date" data-k="devis.date"></label>
+      <label class="f">Validité (jours)<input id="d-val" type="number" min="1" data-k="devis.validite" data-num></label>
+      <label class="f">TVA
+        <select id="d-tva" data-k="devis.tva" data-num>
+          <option value="20">20 %</option><option value="10">10 % (rénovation logement + 2 ans)</option><option value="5.5">5,5 %</option>
+        </select></label>
+      <label class="f">Remise (%)<input id="d-remise" type="number" min="0" max="100" step="0.5" data-k="devis.remise" data-num></label>
+      <label class="f">Acompte à la commande (%)<input id="d-acompte" type="number" min="0" max="100" data-k="devis.acompte" data-num></label>
+    </div>
+    <h3>Lignes complémentaires</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Désignation</th><th class="r">Qté</th><th class="r">PU HT</th><th></th></tr></thead>
+      <tbody id="extra-body"></tbody>
+    </table></div>
+    <div class="row"><button class="btn" id="add-extra">+ Ligne</button></div>
+    <label class="f">Conditions / remarques<textarea id="d-notes" rows="3" data-k="devis.notes"></textarea></label>
+    <details>
+      <summary>Mon entreprise</summary>
+      <div class="grid2" style="margin-top:10px">
+        <label class="f">Raison sociale<input id="e-nom" data-k="company.nom"></label>
+        <label class="f">SIRET<input id="e-siret" data-k="company.siret"></label>
+        <label class="f">Adresse<input id="e-adr" data-k="company.adresse"></label>
+        <label class="f">Téléphone<input id="e-tel" data-k="company.tel"></label>
+        <label class="f">E-mail<input id="e-mail" data-k="company.email"></label>
+      </div>
+    </details>
+  </div>
+
+  <div class="doc" id="doc"></div>
+
+  <div class="row">
+    <button class="btn primary" id="copy">Copier le devis</button>
+    <button class="btn" id="save-devis">Enregistrer dans l'historique</button>
+    <button class="btn ghost" id="new-devis">Nouveau devis</button>
+  </div>
+  <textarea id="copy-fallback" rows="8" hidden readonly></textarea>
+
+  <div class="panel">
+    <h3>Historique</h3>
+    <div class="hist" id="hist"></div>
+  </div>
+</section>
+
+<!-- NOTICE -->
+<section class="tab notice" id="t-notice" hidden>
+  <div class="panel">
+    <h2>Notice d'utilisation</h2>
+    <p class="hint">Le principe : photographier chaque façade ou pièce, mesurer au mètre une seule fenêtre par modèle, et laisser l'appli calculer le reste jusqu'au devis.</p>
+    <div class="flow"><span>Client</span><i>→</i><span>Zones</span><i>→</i><span>Photo</span><i>→</i><span>Redresser</span><i>→</i><span>Tracer</span><i>→</i><span>Répéter</span><i>→</i><span>1 cote ≈</span><i>→</i><span>Devis</span></div>
+  </div>
+
+  <details open>
+    <summary>1. Préparer le chantier</summary>
+    <ol>
+      <li>Onglet <b class="k">Chantier</b> : remplissez le nom du client, ses coordonnées et l'adresse du chantier.</li>
+      <li>Créez une <b>zone</b> par façade ou par pièce intérieure avec <b class="k">+ Zone</b>. Donnez-lui un nom (« Façade nord », « Hall RDC »).</li>
+      <li>Pour chaque zone, choisissez <b>Extérieur</b> ou <b>Intérieur</b>, et le <b>film</b> à poser. Une façade peut recevoir un film solaire et une cloison intérieure un dépoli.</li>
+      <li>Touchez une zone en haut pour travailler dessus. La photo et le tableau affichés sont ceux de cette zone.</li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>2. Prendre la photo</summary>
+    <ul>
+      <li><b class="k">Prendre une photo</b> ouvre l'appareil photo, <b class="k">Importer</b> la galerie.</li>
+      <li>Cadrez toute la façade ou tout le pan vitré. Pas besoin d'être parfaitement de face : l'étape suivante corrige la perspective.</li>
+      <li>Évitez le grand angle extrême et les reflets qui cachent les montants des fenêtres.</li>
+      <li>Une nouvelle photo remplace la précédente de la zone et efface les fenêtres tracées. Les vitrages saisis à la main sont conservés.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>3. Redresser la photo (4 coins)</summary>
+    <p>Cette étape met la photo « de face » pour que tous les étages soient à la même échelle.</p>
+    <ol>
+      <li>Outil <b class="k">Redresser (4 coins)</b>.</li>
+      <li>Touchez les 4 coins d'un rectangle dont vous connaissez la largeur et la hauteur réelles, dans l'ordre : <b>haut-gauche, haut-droit, bas-droit, bas-gauche</b>.</li>
+      <li>Glissez un point numéroté pour l'ajuster au besoin.</li>
+      <li>Saisissez la largeur et la hauteur réelles en cm, puis <b class="k">Redresser la photo</b>.</li>
+    </ol>
+    <p><b>Quel rectangle choisir ?</b> Le plus grand possible : un bloc de plusieurs fenêtres, ou la façade entre deux repères (angles, joints de dilatation) mesurés au télémètre. Plus il est grand, plus les cotes estimées sont justes.</p>
+    <p><b class="k">Revenir à la photo d'origine</b> annule le redressement.</p>
+  </details>
+
+  <details>
+    <summary>4. Tracer et répéter les fenêtres</summary>
+    <ol>
+      <li>Outil <b class="k">Tracer un vitrage</b> : glissez le doigt d'un coin à l'autre de la partie vitrée (clair de vitrage, sans le cadre).</li>
+      <li>Pour une façade régulière, tracez seulement la fenêtre en haut à gauche, puis prenez l'outil <b class="k">Répéter</b>.</li>
+      <li>Réglez le nombre de <b>colonnes</b> (fenêtres par étage) et de <b>rangées</b> (étages).</li>
+      <li>Glissez la copie jusqu'à la dernière fenêtre, en bas à droite. Toutes les fenêtres intermédiaires se répartissent régulièrement. Les emplacements déjà occupés sont ignorés.</li>
+      <li>Les fenêtres d'un autre modèle (porte-fenêtre, imposte) se tracent à part, et peuvent aussi être répétées.</li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>5. Choisir les vitrages du devis</summary>
+    <ul>
+      <li>Outil <b class="k">Sélectionner</b> : touchez une fenêtre pour l'inclure (colorée) ou l'exclure (pointillés) du devis.</li>
+      <li>Dans le tableau, la case <b>Devis</b> fait la même chose. <b class="k">Tout cocher</b> et <b class="k">Tout décocher</b> agissent sur la zone affichée.</li>
+      <li>La colonne <b>Qté</b> sert aux vitrages identiques non tracés (par exemple 12 vitrages de cage d'escalier).</li>
+      <li><b class="k">+ Vitrage saisi</b> ajoute une ligne sans photo, à remplir à la main.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>6. Une seule cote par modèle</summary>
+    <ol>
+      <li>Mesurez au mètre une fenêtre de chaque modèle.</li>
+      <li>Saisissez sa largeur et sa hauteur dans le tableau : elle passe en <span class="chip mes">Cote mesurée</span>.</li>
+      <li>Touchez <b class="k">≈</b> à côté : la cote est copiée sur toutes les fenêtres de la zone de taille proche (±10 %), qui passent en <span class="chip mes">Copie de F1</span>.</li>
+    </ol>
+    <p>Repères dans la colonne Source : <span class="chip est">Estimée photo</span> (calculée sur la photo), <span class="chip mes">Cote mesurée</span>, <span class="chip mes">Copie de…</span>, <span class="chip miss">À mesurer</span> (aucune cote, vitrage exclu des calculs).</p>
+    <p><b>Précision :</b> une cote estimée sur photo redressée est juste à 1 à 3 cm près. Cela suffit pour un devis. Avant la découpe, vérifiez toujours une cote réelle par modèle.</p>
+  </details>
+
+  <details>
+    <summary>7. Régler la pose</summary>
+    <ul>
+      <li><b>Coupe usine</b> : le film est découpé à l'atelier, plus court que le vitrage. Le <b>jeu par côté</b> (en mm) fixe de combien il est plus court, pour ne pas toucher le joint. À n'utiliser qu'avec des cotes mesurées ou copiées : un avertissement s'affiche si des cotes sont seulement estimées.</li>
+      <li><b>Coupe sur place – finition</b> : le film est préparé plus grand, avec un <b>surplus par côté</b> (10 à 20 mm conseillés), puis arasé au cutter sur le vitrage. Ce surplus absorbe aussi l'imprécision de la photo.</li>
+      <li>Chaque mode a son <b>prix de pose au m²</b>. Les <b>suppléments extérieur / intérieur</b> s'ajoutent selon la zone.</li>
+      <li><b>Base de facturation de la fourniture</b> : surface de film découpé, surface de vitrage, ou rouleau réellement consommé (chutes comprises).</li>
+      <li><b>Surface minimum par vitrage</b> : un petit vitrage est facturé au minimum indiqué (par exemple 0,5 m²).</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>8. Lire le calepinage</summary>
+    <ul>
+      <li>La <b>laize</b> est la largeur du rouleau (par exemple 152 cm). Le rouleau se déroule dans l'autre sens, sur sa longueur (par exemple 30 m).</li>
+      <li><b>Lés verticaux</b> : la largeur du film est placée dans la laize, la hauteur se déroule. <b>Lés horizontaux</b> : la pièce est couchée. En <b>optimisé</b>, l'appli choisit le sens qui consomme le moins de rouleau. Imposez un sens pour un film à motif ou à rendu directionnel.</li>
+      <li>Une pièce plus large que la laize est coupée en plusieurs <b>lés</b>. Le <b>recouvrement</b> règle le chevauchement entre lés (0 = bord à bord).</li>
+      <li>L'<b>espace de coupe</b> est la marge laissée entre deux pièces sur le rouleau.</li>
+      <li>Un plan de coupe est calculé <b>par film</b>, toutes zones confondues. Le plan se lit de gauche à droite. Chaque pièce porte la lettre de sa zone (A·F3 = zone A, fenêtre F3). Le résultat donne le métrage linéaire, le taux de chute et le nombre de rouleaux à commander.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>9. Gérer la base de films</summary>
+    <ul>
+      <li>Onglet <b class="k">Films</b> : remplacez les films d'exemple par vos références, avec la laize, la longueur du rouleau et le prix de fourniture au m² HT.</li>
+      <li>Le film coché est proposé par défaut pour chaque nouvelle zone.</li>
+      <li>Si vous supprimez un film utilisé dans une zone, cette zone passe sur le film par défaut.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>10. Éditer le devis</summary>
+    <ol>
+      <li>Ouvrez <b class="k">Mon entreprise</b> une fois pour saisir votre raison sociale, SIRET et coordonnées. Elles sont gardées pour les devis suivants.</li>
+      <li>Vérifiez le numéro, la date, la validité, la TVA (20 %, 10 % en rénovation de logement de plus de 2 ans, 5,5 %), la remise et l'acompte.</li>
+      <li>Ajoutez les <b>lignes complémentaires</b> : déplacement, nacelle, échafaudage, dépose d'ancien film. Une ligne à quantité 0 n'apparaît pas sur le devis.</li>
+      <li>Le devis regroupe la fourniture et la pose par zone. Le détail des cotes de chaque vitrage est en bas.</li>
+      <li><b class="k">Copier le devis</b> copie le texte complet, à coller dans un e-mail, un SMS ou votre logiciel de facturation.</li>
+      <li><b class="k">Enregistrer dans l'historique</b> garde le devis avec ses photos. Touchez-le dans l'historique pour le rouvrir et le modifier.</li>
+      <li><b class="k">Nouveau devis</b> repart d'un chantier vide, en gardant vos films, tarifs, réglages de pose et coordonnées.</li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>11. Où sont mes données ?</summary>
+    <ul>
+      <li>Tout est enregistré automatiquement dans le navigateur de l'appareil utilisé. Les données ne sont pas partagées entre votre téléphone et un ordinateur.</li>
+      <li>Les photos prennent de la place : si un message signale que la mémoire est pleine, supprimez d'anciens devis de l'historique.</li>
+      <li>Effacer les données du navigateur efface aussi vos devis : pensez à copier le texte des devis importants.</li>
+    </ul>
+  </details>
+</section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const fmt=(n,d=2)=>(isFinite(n)?n:0).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const eur=n=>fmt(n)+' €';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const today=()=>new Date().toISOString().slice(0,10);
+const KEY='metre_film_v1';
+const TYPE={ext:'Extérieur',int:'Intérieur'};
+
+function sampleFacade(){const w=[];let n=1;for(let f=0;f<4;f++)for(let i=0;i<5;i++){w.push({id:uid(),label:'F'+n,x:110+i*210,y:90+f*190,w:140,h:150,wcm:141.5,hcm:151,measured:true,from:n>1?'F1':null,qty:1,sel:f<3});n++}return w}
+function sampleInterior(){const w=[];for(let i=0;i<4;i++)w.push({id:uid(),label:i===3?'Porte':'C'+(i+1),x:120+i*250,y:170,w:240,h:460,wcm:120,hcm:230,measured:false,qty:1,sel:i<3});return w}
+function newZone(nom,type,filmId){return{id:uid(),nom,type,filmId,photo:null,sampleKind:null,scale:null,calib:null,windows:[]}}
+function defaults(){
+  const z1={...newZone('Façade sud (exemple)','ext','f1'),sampleKind:'facade',scale:1,calib:{x1:110,y1:258,x2:250,y2:258,cm:140},windows:sampleFacade()};
+  const z2={...newZone('Hall – cloison vitrée (exemple)','int','f4'),sampleKind:'interieur',scale:2,calib:{x1:120,y1:650,x2:360,y2:650,cm:120},windows:sampleInterior()};
+  return{zones:[z1,z2],zoneId:z1.id,
+  client:{nom:'Syndic Résidence Les Tilleuls (exemple)',tel:'',adresse:'12 rue des Écoles, 88000 Épinal',chantier:'Bâtiment B',email:''},
+  company:{nom:'Votre entreprise',siret:'',adresse:'',tel:'',email:''},
+  pose:{mode:'surplace',jeu:3,surplus:15,prixUsine:22,prixSurPlace:28,supExt:6,supInt:0,base:'film',min:0.5},
+  roll:{sens:'auto',rec:0,gap:10},
+  films:[
+    {id:'f1',nom:'Solaire argent 20 ext. (exemple)',type:'Solaire réfléchissant',laize:152,long:30,prix:27},
+    {id:'f2',nom:'Solaire neutre 35 (exemple)',type:'Solaire neutre',laize:152,long:30,prix:31},
+    {id:'f3',nom:'Sécurité 100 µ (exemple)',type:'Sécurité',laize:152,long:30,prix:19},
+    {id:'f4',nom:'Dépoli intimité (exemple)',type:'Occultant / décor',laize:122,long:30,prix:17},
+    {id:'f5',nom:'Anti-UV clair (exemple)',type:'Anti-UV',laize:183,long:30,prix:22}],
+  filmId:'f1',
+  devis:{num:'',date:today(),validite:30,tva:20,remise:0,acompte:30,notes:'Accès aux vitrages dégagé par le client.',extras:[{id:uid(),lib:'Déplacement et installation de chantier',qte:1,pu:80},{id:uid(),lib:'Location nacelle (journée)',qte:0,pu:290}]},
+  history:[],tab:'chantier'}}
+function migrate(o){if(o&&o.windows&&!o.zones){const z={...newZone('Façade','ext',o.filmId||'f1'),photo:o.photo||null,sampleKind:o.sample?'facade':null,scale:o.scale||null,calib:o.calib||null,windows:o.windows};o.zones=[z];o.zoneId=z.id;delete o.windows;delete o.photo;delete o.scale;delete o.calib;delete o.sample}
+  if(o&&o.pose){o.pose.supExt??=6;o.pose.supInt??=0}return o}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));return s&&(s.zones||s.windows)?migrate(s):null}catch(e){return null}}
+let S=load()||defaults();
+(S.history||[]).forEach(migrate);
+if(!S.devis.num)S.devis.num=nextNum();
+let saveT;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Mémoire du navigateur pleine : photos trop lourdes, supprimez des devis de l\'historique')}},300)}
+function nextNum(){const d=new Date();const p='DEV-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+'-';const n=(S.history||[]).filter(h=>h.devis.num.startsWith(p)).length+1;return p+String(n).padStart(3,'0')}
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(t._t);t._t=setTimeout(()=>t.hidden=true,2800)}
+const getK=k=>k.split('.').reduce((o,p)=>o?.[p],S);
+function setK(k,v){const ps=k.split('.');const last=ps.pop();ps.reduce((o,p)=>o[p],S)[last]=v}
+const Z=()=>S.zones.find(z=>z.id===S.zoneId)||S.zones[0];
+const letter=z=>String.fromCharCode(65+S.zones.indexOf(z));
+const filmById=id=>S.films.find(f=>f.id===id)||S.films[0];
+const filmOf=z=>filmById(z.filmId);
+const zSel=z=>z.windows.filter(w=>w.sel&&w.wcm>0&&w.hcm>0);
+
+/* ---------- Calculs ---------- */
+function filmDims(w){const p=S.pose;const d=p.mode==='usine'?-2*p.jeu/10:2*p.surplus/10;return{w:Math.max(0,w.wcm+d),h:Math.max(0,w.hcm+d)}}
+function surf(wins){const min=+S.pose.min||0;let vit=0,fil=0,vitF=0,filF=0,n=0;
+  for(const w of wins){const a=w.wcm*w.hcm/1e4,d=filmDims(w),b=d.w*d.h/1e4,q=w.qty||1;vit+=a*q;fil+=b*q;vitF+=Math.max(a,min)*q;filF+=Math.max(b,min)*q;n+=q}
+  return{vit,fil,vitF,filF,n}}
+function layout(f,items){
+  const L=f.laize;const rec=S.roll.rec/10,gap=S.roll.gap/10;const strips=[],pieces=[];
+  for(const {w,z} of items){const d=filmDims(w);
+    const opt=(across,len,o)=>{if(across<=L)return{n:1,strip:across,len,o};const eff=L-rec;if(eff<=0)return{n:99,strip:L,len,o};const n=Math.ceil((across-rec)/eff);return{n,strip:(across+(n-1)*rec)/n,len,o}};
+    const v=opt(d.w,d.h,'vertical'),h=opt(d.h,d.w,'horizontal');
+    const c=S.roll.sens==='vertical'?v:S.roll.sens==='horizontal'?h:(Math.abs(v.n*v.len-h.n*h.len)<0.01?(v.n<=h.n?v:h):(v.n*v.len<h.n*h.len?v:h));
+    for(let q=1;q<=(w.qty||1);q++){const lab=letter(z)+'·'+w.label+((w.qty||1)>1?'.'+q:'');pieces.push({lab,across:c.strip,len:c.len,n:c.n,o:c.o,zone:z.nom});
+      for(let k=0;k<c.n;k++)strips.push({lab:lab+(c.n>1?' L'+(k+1):''),across:c.strip,len:c.len})}}
+  strips.sort((a,b)=>b.len-a.len);const shelves=[];
+  for(const s of strips){let sh=shelves.find(x=>x.used+(x.items.length?gap:0)+s.across<=L+1e-6);
+    if(!sh){sh={len:s.len,used:0,items:[]};shelves.push(sh)}const x=sh.used+(sh.items.length?gap:0);sh.items.push({...s,x});sh.used=x+s.across}
+  let y=0;shelves.forEach((s,i)=>{s.y=y;y+=s.len+(i<shelves.length-1?gap:0)});
+  const ml=y/100,rollM2=ml*L/100,useful=strips.reduce((a,s)=>a+s.across*s.len,0)/1e4;
+  return{f,L,ml,rollM2,useful,waste:rollM2?1-useful/rollM2:0,rolls:ml/f.long,shelves,pieces}}
+function layouts(){const g=new Map();for(const z of S.zones)for(const w of zSel(z)){const f=filmOf(z);if(!g.has(f.id))g.set(f.id,[]);g.get(f.id).push({w,z})}
+  return[...g.entries()].map(([id,items])=>layout(filmById(id),items))}
+function totals(){const lays=layouts();const ratio={};lays.forEach(l=>ratio[l.f.id]=l.useful?l.rollM2/l.useful:1);
+  const groups=[];let all={vit:0,fil:0,n:0,vitF:0,filF:0,base:0};
+  for(const z of S.zones){const wins=zSel(z);if(!wins.length)continue;const s=surf(wins),f=filmOf(z);
+    const base=S.pose.base==='vitrage'?s.vitF:S.pose.base==='rouleau'?s.fil*(ratio[f.id]||1):s.filF;
+    const pp=(S.pose.mode==='usine'?+S.pose.prixUsine:+S.pose.prixSurPlace)+(z.type==='ext'?+S.pose.supExt||0:+S.pose.supInt||0);
+    const lines=[{lib:`Fourniture film ${f.nom} – ${f.type}`,qte:base,u:'m²',pu:+f.prix},
+      {lib:`Pose ${z.type==='ext'?'côté extérieur':'côté intérieur'}, ${S.pose.mode==='usine'?'coupe usine (jeu '+fmt(S.pose.jeu,1)+' mm/côté)':'coupe sur place, finition au plus près'}`,qte:s.vitF,u:'m²',pu:pp}];
+    lines.forEach(l=>l.tot=Math.round(l.qte*l.pu*100)/100);groups.push({z,s,lines,wins});
+    for(const k of ['vit','fil','n','vitF','filF'])all[k]+=s[k];all.base+=base}
+  const extras=S.devis.extras.filter(e=>+e.qte>0).map(e=>({lib:e.lib,qte:+e.qte,u:'u',pu:+e.pu,tot:Math.round(e.qte*e.pu*100)/100}));
+  const sous=groups.flatMap(g=>g.lines).concat(extras).reduce((a,l)=>a+l.tot,0),rem=sous*(+S.devis.remise||0)/100,ht=sous-rem,tva=ht*(+S.devis.tva)/100,ttc=ht+tva,ac=ttc*(+S.devis.acompte||0)/100;
+  return{groups,extras,sous,rem,ht,tva,ttc,ac,all,lays}}
+
+/* ---------- Photo & canvas ---------- */
+const cv=$('#cv'),ctx=cv.getContext('2d');let mode='select',drag=null,pendingCalib=null;const imgCache={};
+function mk(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'));return c}
+const SAMPLES={
+ facade:mk(1200,860,c=>{const g=c.createLinearGradient(0,0,0,860);g.addColorStop(0,'#9FC3D6');g.addColorStop(1,'#DCE7EC');c.fillStyle=g;c.fillRect(0,0,1200,860);
+  c.fillStyle='#C9B79C';c.fillRect(60,40,1080,820);c.fillStyle='#B8A68A';for(let f=0;f<5;f++)c.fillRect(60,62+f*190,1080,8);c.fillStyle='#8E7F69';c.fillRect(60,40,1080,14);
+  for(let f=0;f<4;f++)for(let i=0;i<5;i++){const x=110+i*210,y=90+f*190;c.fillStyle='#EDE8DF';c.fillRect(x-8,y-8,156,166);
+   const gg=c.createLinearGradient(x,y,x+140,y+150);gg.addColorStop(0,'#5E8AA3');gg.addColorStop(.55,'#9BBCCD');gg.addColorStop(1,'#46708A');c.fillStyle=gg;c.fillRect(x,y,140,150);
+   c.fillStyle='#EDE8DF';c.fillRect(x+68,y,4,150);c.fillStyle='#A99677';c.fillRect(x-12,y+150,164,8)}}),
+ interieur:mk(1200,800,c=>{c.fillStyle='#E9E4DA';c.fillRect(0,0,1200,800);c.fillStyle='#CFC6B6';c.fillRect(0,660,1200,140);c.fillStyle='#BDB2A0';c.fillRect(0,656,1200,6);
+  c.fillStyle='#3A3F44';c.fillRect(104,154,1012,8);c.fillRect(104,630,1012,8);
+  for(let i=0;i<4;i++){const x=120+i*250,y=170;c.fillStyle='#3A3F44';c.fillRect(x-12,y-12,264,484);
+   const gg=c.createLinearGradient(x,y,x+240,y+460);gg.addColorStop(0,'#C7DCE3');gg.addColorStop(.5,'#EAF2F4');gg.addColorStop(1,'#B5CDD6');c.fillStyle=gg;c.fillRect(x,y,240,460);
+   if(i===3){c.fillStyle='#3A3F44';c.fillRect(x+200,y+220,10,60)}}})
+};
+function blank(){return mk(1200,800,c=>{c.fillStyle='#D5DCDB';c.fillRect(0,0,1200,800);c.fillStyle='#6B7A7E';c.font='600 40px IBM Plex Sans, sans-serif';c.textAlign='center';c.fillText('Prenez une photo de cette zone',600,410)})}
+const BLANK=blank();
+function src(z=Z()){if(z.photo){let im=imgCache[z.id];if(!im||im._src!==z.photo){im=new Image();im._src=z.photo;im.onload=()=>{if(Z()===z)fitCanvas()};im.src=z.photo;imgCache[z.id]=im}if(im.complete&&im.naturalWidth)return im}
+  return z.sampleKind?SAMPLES[z.sampleKind]:BLANK}
+const dims=()=>{const s=src();return{W:s.naturalWidth||s.width,H:s.naturalHeight||s.height}};
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function fitCanvas(){const r=cv.parentElement.getBoundingClientRect();if(!r.width)return;const dpr=window.devicePixelRatio||1;const{W,H}=dims();const h=r.width*H/W;
+  cv.width=Math.round(r.width*dpr);cv.height=Math.round(h*dpr);cv.style.height=h+'px';draw()}
+function draw(){const z=Z();const{W,H}=dims();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
+  const k=cv.width/W;ctx.setTransform(k,0,0,k,0,0);ctx.drawImage(src(),0,0,W,H);
+  const u=W/(cv.clientWidth||W);const acc=css(z.type==='int'?'--int':'--accent'),mark=css('--mark');
+  ctx.font=`600 ${13*u}px IBM Plex Sans, sans-serif`;
+  for(const w of z.windows){if(w.w==null)continue;ctx.lineWidth=(w.sel?2.5:1.5)*u;
+    if(w.sel){ctx.fillStyle=acc+'55';ctx.fillRect(w.x,w.y,w.w,w.h);ctx.setLineDash([]);ctx.strokeStyle=acc}else{ctx.setLineDash([6*u,4*u]);ctx.strokeStyle='#ffffffcc'}
+    ctx.strokeRect(w.x,w.y,w.w,w.h);ctx.setLineDash([]);
+    const t=w.label,tw=ctx.measureText(t).width+8*u;ctx.fillStyle=w.sel?acc:'#00000099';ctx.fillRect(w.x,w.y,tw,18*u);ctx.fillStyle='#fff';ctx.fillText(t,w.x+4*u,w.y+13.5*u)}
+  const cl=pendingCalib||z.calib;if(cl&&(mode==='calib'||pendingCalib)){ctx.strokeStyle=mark;ctx.lineWidth=3*u;ctx.beginPath();ctx.moveTo(cl.x1,cl.y1);ctx.lineTo(cl.x2,cl.y2);ctx.stroke();
+    for(const p of[[cl.x1,cl.y1],[cl.x2,cl.y2]]){ctx.beginPath();ctx.arc(p[0],p[1],5*u,0,7);ctx.fillStyle=mark;ctx.fill()}
+    if(cl.cm&&!pendingCalib){ctx.fillStyle=mark;ctx.fillText(fmt(cl.cm,0)+' cm',(cl.x1+cl.x2)/2+6*u,(cl.y1+cl.y2)/2-6*u)}}
+  if(drag&&mode==='draw'){const r=normRect(drag);ctx.strokeStyle=mark;ctx.lineWidth=2*u;ctx.setLineDash([6*u,4*u]);ctx.strokeRect(r.x,r.y,r.w,r.h);ctx.setLineDash([])}
+  const act=z.windows.find(w=>w.id===activeId&&w.w!=null);
+  if(act&&(mode==='grid'||mode==='draw')){ctx.strokeStyle=mark;ctx.lineWidth=3*u;ctx.strokeRect(act.x,act.y,act.w,act.h)}
+  if(mode==='grid'&&act&&ghost){ctx.strokeStyle=mark;ctx.lineWidth=1.5*u;ctx.setLineDash([5*u,4*u]);for(const r of gridRects(act,ghost))ctx.strokeRect(r.x,r.y,act.w,act.h);ctx.setLineDash([])}
+  if(mode==='rectify'&&z.rectPts?.length){const P=z.rectPts;ctx.strokeStyle=mark;ctx.lineWidth=2.5*u;ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));if(P.length===4)ctx.closePath();ctx.stroke();
+    P.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,11*u,0,7);ctx.fillStyle=mark;ctx.fill();ctx.fillStyle='#000';ctx.textAlign='center';ctx.fillText(i+1,p.x,p.y+4.5*u);ctx.textAlign='left'})}}
+let activeId=null,ghost=null,gOff=null,rDrag=-1;
+function gridRects(a,g){const C=Math.max(1,parseInt($('#g-cols').value)||1),R=Math.max(1,parseInt($('#g-rows').value)||1);const out=[];
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){if(!r&&!c)continue;out.push({x:a.x+(C>1?c*(g.x-a.x)/(C-1):0),y:a.y+(R>1?r*(g.y-a.y)/(R-1):0)})}return out}
+function hitWin(z,p){return[...z.windows].reverse().find(w=>w.w!=null&&p.x>=w.x&&p.x<=w.x+w.w&&p.y>=w.y&&p.y<=w.y+w.h)}
+function applyGrid(){const z=Z(),a=z.windows.find(w=>w.id===activeId);if(!a||!ghost)return;if(Math.hypot(ghost.x-a.x,ghost.y-a.y)<a.w/3){ghost=null;draw();return}let n=0;const pre=z.type==='int'?'V':'F';
+  for(const r of gridRects(a,ghost)){const cx=r.x+a.w/2,cy=r.y+a.h/2;if(z.windows.some(w=>w.w!=null&&cx>=w.x&&cx<=w.x+w.w&&cy>=w.y&&cy<=w.y+w.h))continue;
+    const w={id:uid(),label:pre+(z.windows.length+1),x:r.x,y:r.y,w:a.w,h:a.h,wcm:a.wcm,hcm:a.hcm,measured:a.measured,from:a.measured?a.label:null,qty:1,sel:true};
+    if(!a.measured)estimate(w,z);z.windows.push(w);n++}
+  ghost=null;changed('win');toast(n?`${n} vitrage(s) ajouté(s)${a.measured?' avec la cote de '+a.label:''}`:'Aucun vitrage ajouté (positions déjà occupées)')}
+/* Homographie (4 points) */
+function solveH(s,d){const A=[],b=[];for(let i=0;i<4;i++){const[x,y]=s[i],[u,v]=d[i];A.push([x,y,1,0,0,0,-u*x,-u*y]);b.push(u);A.push([0,0,0,x,y,1,-v*x,-v*y]);b.push(v)}
+  for(let i=0;i<8;i++){let p=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];[b[i],b[p]]=[b[p],b[i]];if(Math.abs(A[i][i])<1e-10)return null;
+    for(let r=0;r<8;r++)if(r!==i){const f=A[r][i]/A[i][i];for(let c=i;c<8;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i]}}return[...b.map((v,i)=>v/A[i][i]),1]}
+const hw=(h,x,y)=>h[6]*x+h[7]*y+h[8];
+const applyH=(h,x,y)=>{const w=hw(h,x,y);return[(h[0]*x+h[1]*y+h[2])/w,(h[3]*x+h[4]*y+h[5])/w]};
+function rectify(){const z=Z(),RW=parseFloat(String($('#rect-w').value).replace(',','.')),RH=parseFloat(String($('#rect-h').value).replace(',','.'));
+  if((z.rectPts||[]).length<4){toast('Placez les 4 coins');return}if(!(RW>0&&RH>0)){toast('Indiquez la largeur et la hauteur réelles');return}
+  const P=z.rectPts.map(p=>[p.x,p.y]),D=[[0,0],[RW,0],[RW,RH],[0,RH]];const F=solveH(P,D),I=solveH(D,P);if(!F||!I){toast('Points mal placés, recommencez');return}
+  const s=Math.sign(hw(F,P[0][0],P[0][1]));const{W:iw,H:ih}=dims();const xs=[],ys=[];
+  for(let gy=0;gy<=8;gy++)for(let gx=0;gx<=8;gx++){const x=gx*iw/8,y=gy*ih/8;if(hw(F,x,y)*s<=0)continue;const q=applyH(F,x,y);xs.push(q[0]);ys.push(q[1])}
+  let x0=Math.max(Math.min(...xs,0),-6*RW),x1=Math.min(Math.max(...xs,RW),7*RW),y0=Math.max(Math.min(...ys,0),-6*RH),y1=Math.min(Math.max(...ys,RH),7*RH);
+  const k=Math.min(1600/(x1-x0),1600/(y1-y0)),ow=Math.round((x1-x0)*k),oh=Math.round((y1-y0)*k);
+  const sc=mk(iw,ih,c=>c.drawImage(src(),0,0,iw,ih)),sd=sc.getContext('2d').getImageData(0,0,iw,ih).data;
+  const out=mk(ow,oh,()=>{}),oc=out.getContext('2d'),od=oc.createImageData(ow,oh),o=od.data;
+  for(let v=0;v<oh;v++){const y=y0+v/k;for(let u=0;u<ow;u++){const x=x0+u/k;const w=I[6]*x+I[7]*y+I[8];const sx=Math.round((I[0]*x+I[1]*y+I[2])/w),sy=Math.round((I[3]*x+I[4]*y+I[5])/w);const j=(v*ow+u)*4;
+    if(sx>=0&&sy>=0&&sx<iw&&sy<ih){const i=(sy*iw+sx)*4;o[j]=sd[i];o[j+1]=sd[i+1];o[j+2]=sd[i+2]}else{o[j]=200;o[j+1]=208;o[j+2]=207}o[j+3]=255}}
+  oc.putImageData(od,0,0);
+  z.windows.forEach(w=>{if(w.w==null)return;const c=[[w.x,w.y],[w.x+w.w,w.y],[w.x+w.w,w.y+w.h],[w.x,w.y+w.h]].map(([a,b])=>applyH(F,a,b)).map(([a,b])=>[(a-x0)*k,(b-y0)*k]);
+    const X=c.map(q=>q[0]),Y=c.map(q=>q[1]);w.x=Math.min(...X);w.y=Math.min(...Y);w.w=Math.max(...X)-w.x;w.h=Math.max(...Y)-w.y});
+  z.orig={photo:z.photo,sampleKind:z.sampleKind,scale:z.scale,calib:z.calib,I,x0,y0,k,windows:null};
+  z.photo=out.toDataURL('image/jpeg',.82);z.sampleKind=null;z.scale=k;z.calib=null;z.rectPts=[];
+  z.windows.forEach(w=>{if(!w.measured)estimate(w,z)});$('#rect-box').hidden=true;setMode('draw');changed('win');fitCanvas();
+  toast('Photo redressée : toutes les fenêtres de cette façade sont à la même échelle')}
+function unrectify(){const z=Z(),o=z.orig;if(!o)return;
+  z.windows.forEach(w=>{if(w.w==null)return;const c=[[w.x,w.y],[w.x+w.w,w.y],[w.x+w.w,w.y+w.h],[w.x,w.y+w.h]].map(([a,b])=>applyH(o.I,o.x0+a/o.k,o.y0+b/o.k));
+    const X=c.map(q=>q[0]),Y=c.map(q=>q[1]);w.x=Math.min(...X);w.y=Math.min(...Y);w.w=Math.max(...X)-w.x;w.h=Math.max(...Y)-w.y});
+  Object.assign(z,{photo:o.photo,sampleKind:o.sampleKind,scale:o.scale,calib:o.calib,orig:null});z.windows.forEach(w=>{if(!w.measured)estimate(w,z)});changed('win');fitCanvas();toast('Photo d\'origine rétablie')}
+$('#rect-ok').onclick=rectify;$('#rect-undo').onclick=unrectify;
+$('#rect-reset').onclick=()=>{Z().rectPts=[];$('#rect-box').hidden=true;draw()};
+['#g-cols','#g-rows'].forEach(s=>$(s).addEventListener('input',draw));
+function applySimilar(id){const z=Z(),a=z.windows.find(w=>w.id===id);if(!a||!(a.wcm>0&&a.hcm>0))return;
+  const ref=a.w!=null&&z.scale?{w:a.w/z.scale,h:a.h/z.scale}:{w:a.wcm,h:a.hcm};let n=0;
+  for(const w of z.windows){if(w===a||(w.measured&&!w.from))continue;const e=w.w!=null&&z.scale?{w:w.w/z.scale,h:w.h/z.scale}:{w:w.wcm,h:w.hcm};
+    if(Math.abs(e.w-ref.w)<=ref.w*.1&&Math.abs(e.h-ref.h)<=ref.h*.1){w.wcm=a.wcm;w.hcm=a.hcm;w.measured=true;w.from=a.label;n++}}
+  changed('win');toast(n?`Cote de ${a.label} copiée sur ${n} vitrage(s) de même taille`:'Aucun autre vitrage de taille proche (±10 %)')}
+function normRect(d){return{x:Math.min(d.x1,d.x2),y:Math.min(d.y1,d.y2),w:Math.abs(d.x2-d.x1),h:Math.abs(d.y2-d.y1)}}
+function pt(e){const r=cv.getBoundingClientRect();const{W,H}=dims();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
+const hints={select:'Touchez un vitrage pour l\'ajouter ou le retirer du devis.',
+  rectify:'Touchez les 4 coins d\'un rectangle connu de la façade, dans l\'ordre : haut-gauche, haut-droit, bas-droit, bas-gauche. Idéal : un grand rectangle (plusieurs fenêtres, ou la façade entre deux repères). Glissez un point pour l\'ajuster.',
+  draw:'Glissez le doigt d\'un coin à l\'autre d\'un vitrage pour l\'ajouter.',
+  grid:'Touchez la première fenêtre (en haut à gauche), réglez colonnes et rangées, puis glissez pour placer la dernière fenêtre (en bas à droite). Les autres se répartissent seules.',
+  calib:'Tracez un segment sur une dimension connue, puis indiquez sa longueur réelle. Préférez « Redresser » si la photo n\'est pas prise de face.'};
+function setMode(m){mode=m;ghost=null;$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));$('#mode-hint').textContent=hints[m];cv.style.touchAction=m==='select'?'pan-y':'none';cv.style.cursor=m==='select'?'pointer':'crosshair';
+  $('#grid-box').hidden=m!=='grid';$('#rect-box').hidden=!(m==='rectify'&&(Z().rectPts||[]).length===4);if(m!=='calib')$('#calib-box').hidden=true;
+  if(m==='grid'&&!Z().windows.some(w=>w.id===activeId&&w.w!=null)){const f=Z().windows.find(w=>w.w!=null);activeId=f?.id||null}draw()}
+cv.addEventListener('pointerdown',e=>{const p=pt(e),z=Z();
+  if(mode==='select'){const w=hitWin(z,p);if(w){w.sel=!w.sel;activeId=w.id;changed('win')}return}
+  if(mode==='rectify'){z.rectPts??=[];const u=srcW_u()*22;rDrag=z.rectPts.findIndex(q=>Math.hypot(q.x-p.x,q.y-p.y)<u);
+    if(rDrag<0&&z.rectPts.length<4){z.rectPts.push(p);rDrag=z.rectPts.length-1}
+    if(rDrag>=0)cv.setPointerCapture(e.pointerId);$('#rect-box').hidden=z.rectPts.length<4;draw();return}
+  if(mode==='grid'){const h=hitWin(z,p),a=z.windows.find(w=>w.id===activeId);if(h&&h!==a){activeId=h.id;draw();return}if(!a){toast('Tracez d\'abord une fenêtre');return}
+    cv.setPointerCapture(e.pointerId);gOff=h===a?{x:p.x-a.x,y:p.y-a.y}:{x:a.w/2,y:a.h/2};ghost={x:p.x-gOff.x,y:p.y-gOff.y};draw();return}
+  cv.setPointerCapture(e.pointerId);drag={x1:p.x,y1:p.y,x2:p.x,y2:p.y};if(mode==='calib'){pendingCalib={...drag};$('#calib-box').hidden=true}});
+function srcW_u(){return srcW_()/(cv.clientWidth||1)}function srcW_(){return dims().W}
+cv.addEventListener('pointermove',e=>{const p=pt(e);
+  if(mode==='rectify'&&rDrag>=0){Z().rectPts[rDrag]=p;draw();return}
+  if(mode==='grid'&&gOff&&ghost){ghost={x:p.x-gOff.x,y:p.y-gOff.y};draw();return}
+  if(!drag)return;drag.x2=p.x;drag.y2=p.y;if(mode==='calib')pendingCalib={...drag};draw()});
+cv.addEventListener('pointerup',()=>{if(mode==='rectify'){rDrag=-1;save();return}
+  if(mode==='grid'&&gOff){gOff=null;applyGrid();return}
+  if(!drag)return;const d=drag,z=Z();drag=null;
+  if(mode==='draw'){const r=normRect(d);if(r.w>12&&r.h>12){const pre=z.type==='int'?'V':'F';const w={id:uid(),label:pre+(z.windows.length+1),...r,wcm:0,hcm:0,measured:false,qty:1,sel:true};estimate(w,z);z.windows.push(w);activeId=w.id;changed('win')}else draw()}
+  else if(mode==='calib'){if(Math.hypot(d.x2-d.x1,d.y2-d.y1)>10){$('#calib-box').hidden=false;$('#calib-cm').value='';$('#calib-cm').focus()}else{pendingCalib=null;draw()}}});
+$('#calib-ok').onclick=()=>{const cm=parseFloat(String($('#calib-cm').value).replace(',','.'));if(!(cm>0)||!pendingCalib){toast('Indiquez une longueur en cm');return}
+  const z=Z(),c=pendingCalib;z.calib={...c,cm};z.scale=Math.hypot(c.x2-c.x1,c.y2-c.y1)/cm;pendingCalib=null;$('#calib-box').hidden=true;
+  z.windows.forEach(w=>{if(!w.measured)estimate(w,z)});toast('Étalonnage enregistré, cotes estimées mises à jour');changed('win')};
+function estimate(w,z){if(z.scale&&w.w!=null){w.wcm=Math.round(w.w/z.scale);w.hcm=Math.round(w.h/z.scale)}}
+function onPhoto(file){if(!file)return;const url=URL.createObjectURL(file);const im=new Image();im.onload=()=>{const m=1600,r=Math.min(1,m/Math.max(im.width,im.height));
+  const c=mk(Math.round(im.width*r),Math.round(im.height*r),x=>x.drawImage(im,0,0,Math.round(im.width*r),Math.round(im.height*r)));URL.revokeObjectURL(url);
+  const z=Z();z.photo=c.toDataURL('image/jpeg',.8);z.sampleKind=null;z.windows=z.windows.filter(w=>w.w==null);z.scale=null;z.calib=null;z.orig=null;z.rectPts=[];
+  changed('win');fitCanvas();setMode('rectify');toast('Photo chargée. Placez les 4 coins d\'un rectangle connu pour redresser.')};im.src=url}
+$('#f-cam').onchange=e=>{onPhoto(e.target.files[0]);e.target.value=''};$('#f-imp').onchange=e=>{onPhoto(e.target.files[0]);e.target.value=''};
+$$('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+
+/* ---------- Zones ---------- */
+function renderZones(){const z=Z();
+  $('#zones').innerHTML=S.zones.map(x=>{const s=surf(zSel(x));return`<button class="zone ${x.type}" data-z="${x.id}" aria-pressed="${x.id===z.id}"><b>${letter(x)} · ${esc(x.nom)}</b><small>${TYPE[x.type]} · ${s.n} vitr. · ${fmt(s.vit)} m²</small></button>`}).join('')+'<button class="zone add" id="z-add">+ Zone</button>';
+  if(document.activeElement!==$('#z-nom'))$('#z-nom').value=z.nom;$('#z-type').value=z.type;
+  $('#z-film').innerHTML=S.films.map(f=>`<option value="${f.id}" ${f.id===z.filmId?'selected':''}>${esc(f.nom)}</option>`).join('');
+  $('#photo-title').textContent='Photo – '+z.nom;$('#win-title').textContent='Vitrages – '+z.nom;
+  $('#z-del').hidden=S.zones.length<2;$('#z-del').textContent='Supprimer la zone';delete $('#z-del').dataset.arm}
+$('#zones').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.id==='z-add'){const n=S.zones.length+1;const z=newZone((S.zones.some(x=>x.type==='int')?'Zone ':'Intérieur ')+n,'int',S.filmId);S.zones.push(z);S.zoneId=z.id}
+  else S.zoneId=b.dataset.z;pendingCalib=null;$('#calib-box').hidden=true;changed('zone');fitCanvas();setMode(mode)});
+$('#z-nom').oninput=e=>{Z().nom=e.target.value;changed('soft');
+  const b=$(`[data-z="${Z().id}"] b`);if(b)b.textContent=letter(Z())+' · '+Z().nom;$('#photo-title').textContent='Photo – '+Z().nom;$('#win-title').textContent='Vitrages – '+Z().nom};
+$('#z-type').onchange=e=>{Z().type=e.target.value;changed('zone')};
+$('#z-film').onchange=e=>{Z().filmId=e.target.value;changed('zone')};
+$('#z-del').onclick=e=>{const b=e.target;if(!b.dataset.arm){b.dataset.arm=1;b.textContent='Confirmer : supprimer « '+Z().nom+' »';return}
+  S.zones=S.zones.filter(z=>z.id!==S.zoneId);S.zoneId=S.zones[0].id;changed('zone');fitCanvas();toast('Zone supprimée')};
+
+/* ---------- Vitrages ---------- */
+function renderWins(){const z=Z();$('#win-body').innerHTML=z.windows.map(w=>{const miss=!(w.wcm>0&&w.hcm>0);
+  const chip=miss?'<span class="chip miss">À mesurer</span>':w.from?`<span class="chip mes">Copie de ${esc(w.from)}</span>`:w.measured?`<span class="chip mes">Cote mesurée</span> <button class="btn ghost" data-sim="${w.id}" title="Copier cette cote sur les vitrages de même taille" aria-label="Copier la cote de ${esc(w.label)} sur les vitrages de même taille" style="min-height:30px;padding:2px 8px">≈</button>`:'<span class="chip est">Estimée photo</span>';
+  return`<tr data-id="${w.id}" class="${w.sel?'':'off'}"><td><input type="checkbox" data-f="sel" aria-label="Inclure ${esc(w.label)}" ${w.sel?'checked':''}></td>
+  <td><input class="w-sm" data-f="label" value="${esc(w.label)}" aria-label="Repère"></td>
+  <td class="r"><input class="w-sm num" data-f="wcm" type="number" inputmode="decimal" step="0.1" value="${w.wcm||''}" aria-label="Largeur cm"></td>
+  <td class="r"><input class="w-sm num" data-f="hcm" type="number" inputmode="decimal" step="0.1" value="${w.hcm||''}" aria-label="Hauteur cm"></td>
+  <td class="r"><input class="w-xs num" data-f="qty" type="number" min="1" value="${w.qty||1}" aria-label="Quantité"></td>
+  <td>${chip}</td><td><button class="btn ghost danger" data-del="${w.id}" aria-label="Supprimer ${esc(w.label)}">✕</button></td></tr>`}).join('')||'<tr><td colspan="7" class="hint" style="padding:14px">Aucun vitrage dans cette zone. Tracez-les sur la photo ou ajoutez-les à la main.</td></tr>'}
+$('#win-body').addEventListener('input',e=>{const tr=e.target.closest('tr');const w=Z().windows.find(x=>x.id===tr?.dataset.id);if(!w)return;const f=e.target.dataset.f;
+  if(f==='sel'){w.sel=e.target.checked;tr.className=w.sel?'':'off'}else if(f==='label')w.label=e.target.value;
+  else if(f==='qty')w.qty=Math.max(1,parseInt(e.target.value)||1);else{w[f]=parseFloat(e.target.value)||0;w.measured=true;w.from=null;
+    tr.children[5].innerHTML=(w.wcm>0&&w.hcm>0)?`<span class="chip mes">Cote mesurée</span> <button class="btn ghost" data-sim="${w.id}" title="Copier cette cote sur les vitrages de même taille" style="min-height:30px;padding:2px 8px">≈</button>`:'<span class="chip miss">À mesurer</span>'}
+  changed('soft')});
+$('#win-body').addEventListener('click',e=>{const id=e.target.dataset?.del;if(id){Z().windows=Z().windows.filter(w=>w.id!==id);changed('win');return}
+  const s=e.target.closest('[data-sim]');if(s)applySimilar(s.dataset.sim)});
+$('#add-win').onclick=()=>{const z=Z();z.windows.push({id:uid(),label:(z.type==='int'?'V':'F')+(z.windows.length+1),x:null,y:null,w:null,h:null,wcm:0,hcm:0,measured:true,qty:1,sel:true});changed('win')};
+$('#sel-all').onclick=()=>{Z().windows.forEach(w=>w.sel=true);changed('win')};$('#sel-none').onclick=()=>{Z().windows.forEach(w=>w.sel=false);changed('win')};
+
+const kpi=(v,l)=>`<div class="kpi"><b>${v}</b><small>${l}</small></div>`;
+function renderKpis(T){const a=T.all,z=Z(),zs=surf(zSel(z));
+  const miss=S.zones.reduce((n,x)=>n+x.windows.filter(w=>w.sel&&!(w.wcm>0&&w.hcm>0)).length,0);
+  $('#zone-sum').textContent=`Cette zone : ${zs.n} vitrage(s), ${fmt(zs.vit)} m² de vitrage, film ${filmOf(z).nom}.`;
+  $('#kpi-chantier').innerHTML=kpi(S.zones.length,'zones')+kpi(a.n,'vitrages au devis')+kpi(fmt(a.vit)+' m²','vitrage total')+kpi(eur(T.ht),'total HT')+(miss?kpi(miss,'<span style="color:var(--warn)">sans cote</span>'):'');
+  $('#kpi-pose').innerHTML=kpi(fmt(a.vitF)+' m²','pose facturée')+kpi(fmt(a.base)+' m²','fourniture facturée')+kpi(fmt(a.fil-a.vit)+' m²','écart film / vitrage');
+  const z0=Z();$('#scale-info').textContent=z0.scale?`Échelle : 1 cm = ${fmt(z0.scale,2)} px sur la photo.`:'Photo non étalonnée : les cotes ne peuvent pas être estimées, saisissez-les.';
+  $('#sample-banner').hidden=!(z0.sampleKind&&!z0.photo);$('#orig-row').hidden=!z0.orig;
+  const est=S.zones.reduce((n,x)=>n+x.windows.filter(w=>w.sel&&!w.measured&&w.wcm>0).length,0);
+  const msg=S.pose.mode==='usine'
+    ?`${est} vitrage(s) au devis ont une cote estimée sur photo. En coupe usine, le film est coupé à la cote : mesurez au moins un vitrage de chaque modèle et copiez sa cote (≈), ou passez en coupe sur place.`
+    :`${est} vitrage(s) ont une cote estimée sur photo. Le surplus de ${fmt(S.pose.surplus,0)} mm par côté absorbe une erreur d'estimation de cet ordre ; vérifiez une cote réelle par modèle avant la découpe.`;
+  for(const id of ['#usine-warn','#pose-warn']){$(id).hidden=!est;$(id).textContent=msg}}
+function renderPoseSvg(){const us=S.pose.mode==='usine';const gx=90,gy=30,gw=180,gh=130,m=us?-10:12;const fw=us?S.pose.jeu:S.pose.surplus;
+  $('#pose-svg').innerHTML=`<rect x="${gx-10}" y="${gy-10}" width="${gw+20}" height="${gh+20}" fill="var(--sunk)" stroke="var(--muted)" stroke-width="1"/>
+  <rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" fill="var(--accent-soft)" stroke="var(--ink)" stroke-width="1.5"/>
+  <rect x="${gx-m}" y="${gy-m}" width="${gw+2*m}" height="${gh+2*m}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="${us?'0':'7 4'}"/>
+  <text x="${gx+gw/2}" y="${gy+gh/2}" text-anchor="middle" fill="var(--ink)">vitrage (cote)</text>
+  <text x="${gx+gw+16}" y="${gy+gh/2}" fill="var(--accent)">${us?'−':'+'}${fmt(fw,us?1:0)} mm</text>
+  <text x="${gx+gw+16}" y="${gy+gh/2+14}" fill="var(--muted)">par côté</text>
+  <text x="${gx-m}" y="195" fill="var(--accent)">${us?'film découpé usine':'film préparé, arasé sur place'}</text>`}
+function rollSvg(lay){const L=lay.L,k=120/L,W=Math.max(lay.ml*100*k,200),H=120;let s='';
+  for(let m=0;m<=Math.ceil(lay.ml);m++){const x=m*100*k+30;s+=`<line x1="${x}" y1="14" x2="${x}" y2="22" stroke="var(--muted)"/><text x="${x+2}" y="12" fill="var(--muted)">${m} m</text>`}
+  s+=`<rect x="30" y="24" width="${W}" height="${H}" fill="var(--surface)" stroke="var(--line)"/><text x="12" y="${24+H/2}" fill="var(--muted)" transform="rotate(-90 12 ${24+H/2})" text-anchor="middle">laize ${L}</text>`;
+  for(const sh of lay.shelves)for(const it of sh.items){const x=30+sh.y*k,y=24+it.x*k,w=it.len*k,h=it.across*k;
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1"/>`;
+    if(w>40&&h>14)s+=`<text x="${x+4}" y="${y+13}" fill="var(--ink)">${esc(it.lab)}</text>`}
+  return`<svg width="${W+40}" height="${H+34}" viewBox="0 0 ${W+40} ${H+34}">${s}</svg>`}
+function renderRoll(T){$('#roll-groups').innerHTML=T.lays.length?T.lays.map(l=>`<div class="panel"><h3>${esc(l.f.nom)} <span class="hint">· laize ${l.L} cm · rouleau ${fmt(l.f.long,0)} m</span></h3>
+  <div class="kpis">${kpi(fmt(l.ml)+' ml','métrage linéaire')+kpi(fmt(l.rollM2)+' m²','film déroulé')+kpi(fmt(l.waste*100,1)+' %','chute')+kpi(fmt(l.rolls,2),'rouleaux')}</div>
+  <div class="roll">${rollSvg(l)}</div>
+  <details><summary>Débit des pièces (${l.pieces.length})</summary><div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>Pièce</th><th>Zone</th><th class="r">Dans la laize</th><th class="r">Déroulé</th><th>Sens</th></tr></thead><tbody>
+  ${l.pieces.map(p=>`<tr><td>${esc(p.lab)}${p.n>1?` <span class="chip est">${p.n} lés</span>`:''}</td><td>${esc(p.zone)}</td><td class="r num">${fmt(p.across,1)} cm</td><td class="r num">${fmt(p.len,1)} cm</td><td>${p.o==='vertical'?'Vertical':'Horizontal'}</td></tr>`).join('')}</tbody></table></div></details></div>`).join('')
+  :'<div class="panel"><p class="hint">Aucun vitrage coté sélectionné.</p></div>'}
+
+/* ---------- Films ---------- */
+function renderFilms(){$('#film-body').innerHTML=S.films.map(f=>`<tr data-id="${f.id}"><td><input type="radio" name="filmsel" ${f.id===S.filmId?'checked':''} data-f="pick" aria-label="Film par défaut ${esc(f.nom)}"></td>
+  <td><input data-f="nom" value="${esc(f.nom)}" style="min-width:170px"></td><td><input data-f="type" value="${esc(f.type)}" style="min-width:130px"></td>
+  <td class="r"><input class="w-sm num" type="number" data-f="laize" value="${f.laize}"></td><td class="r"><input class="w-sm num" type="number" data-f="long" value="${f.long}"></td>
+  <td class="r"><input class="w-sm num" type="number" step="0.1" data-f="prix" value="${f.prix}"></td>
+  <td><button class="btn ghost danger" data-del="${f.id}" aria-label="Supprimer">✕</button></td></tr>`).join('')}
+$('#film-body').addEventListener('input',e=>{const tr=e.target.closest('tr');const f=S.films.find(x=>x.id===tr.dataset.id);const k=e.target.dataset.f;
+  if(k==='pick')S.filmId=f.id;else f[k]=['laize','long','prix'].includes(k)?(parseFloat(e.target.value)||0):e.target.value;changed('soft')});
+$('#film-body').addEventListener('click',e=>{const id=e.target.dataset?.del;if(!id)return;if(S.films.length<2){toast('Gardez au moins un film');return}
+  S.films=S.films.filter(f=>f.id!==id);if(S.filmId===id)S.filmId=S.films[0].id;S.zones.forEach(z=>{if(z.filmId===id)z.filmId=S.filmId});changed('films')});
+$('#add-film').onclick=()=>{S.films.push({id:uid(),nom:'Nouveau film',type:'',laize:152,long:30,prix:0});changed('films')};
+
+/* ---------- Devis ---------- */
+function renderExtras(){$('#extra-body').innerHTML=S.devis.extras.map(x=>`<tr data-id="${x.id}"><td><input data-f="lib" value="${esc(x.lib)}" style="min-width:200px"></td>
+  <td class="r"><input class="w-xs num" type="number" step="0.5" data-f="qte" value="${x.qte}"></td><td class="r"><input class="w-sm num" type="number" step="0.5" data-f="pu" value="${x.pu}"></td>
+  <td><button class="btn ghost danger" data-del="${x.id}" aria-label="Supprimer">✕</button></td></tr>`).join('')}
+$('#extra-body').addEventListener('input',e=>{const tr=e.target.closest('tr');const x=S.devis.extras.find(y=>y.id===tr.dataset.id);const k=e.target.dataset.f;x[k]=k==='lib'?e.target.value:(parseFloat(e.target.value)||0);changed('soft')});
+$('#extra-body').addEventListener('click',e=>{const id=e.target.dataset?.del;if(id){S.devis.extras=S.devis.extras.filter(x=>x.id!==id);renderExtras();changed('soft')}});
+$('#add-extra').onclick=()=>{S.devis.extras.push({id:uid(),lib:'',qte:1,pu:0});renderExtras();changed('soft')};
+function frDate(d){if(!d)return'';const[y,m,j]=d.split('-');return`${j}/${m}/${y}`}
+const lineRow=l=>`<tr><td>${esc(l.lib)}</td><td class="r num">${fmt(l.qte)} ${l.u}</td><td class="r num">${eur(l.pu)}</td><td class="r num">${eur(l.tot)}</td></tr>`;
+const tr2=(a,b,c='')=>`<span class="${c}">${a}</span><span class="num ${c}" style="text-align:right">${b}</span>`;
+function renderDoc(T){const D=S.devis,C=S.client,E=S.company;
+  $('#doc').innerHTML=`<div class="dh"><div><h3>Devis</h3><div class="meta">N° <span class="num">${esc(D.num)}</span><br>Du ${frDate(D.date)} · valable ${D.validite} jours</div></div>
+   <div class="meta" style="text-align:right"><b style="color:var(--paper-ink)">${esc(E.nom)}</b>${E.adresse?'<br>'+esc(E.adresse):''}${E.tel?'<br>'+esc(E.tel):''}${E.email?'<br>'+esc(E.email):''}${E.siret?'<br>SIRET '+esc(E.siret):''}</div></div>
+   <div class="meta"><b style="color:var(--paper-ink)">Client : ${esc(C.nom)||'—'}</b>${C.adresse?'<br>'+esc(C.adresse):''}${C.tel?'<br>'+esc(C.tel):''}${C.chantier?'<br>Chantier : '+esc(C.chantier):''}</div>
+   <div class="tablewrap"><table><thead><tr><th>Désignation</th><th class="r">Qté</th><th class="r">PU HT</th><th class="r">Total HT</th></tr></thead><tbody>
+   ${T.groups.map(g=>`<tr class="grp"><td colspan="4"><span class="tag ${g.z.type}">${TYPE[g.z.type]}</span> ${esc(g.z.nom)} · ${g.s.n} vitrage(s)</td></tr>`+g.lines.map(lineRow).join('')).join('')}
+   ${T.extras.length?'<tr class="grp"><td colspan="4">Prestations complémentaires</td></tr>'+T.extras.map(lineRow).join(''):''}</tbody></table></div>
+   <div class="tot">${tr2('Sous-total HT',eur(T.sous))}${T.rem?tr2(`Remise ${fmt(D.remise,1)} %`,'− '+eur(T.rem)):''}${tr2('Total HT',eur(T.ht))}${tr2(`TVA ${fmt(+D.tva,1)} %`,eur(T.tva))}${tr2('Total TTC',eur(T.ttc),'big')}${T.ac?tr2(`Acompte ${D.acompte} %`,eur(T.ac)):''}</div>
+   <details><summary>Détail des vitrages (${T.all.n})</summary><div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>Repère</th><th class="r">Cote vitrage</th><th class="r">Film</th><th class="r">Qté</th></tr></thead><tbody>
+   ${T.groups.map(g=>`<tr class="grp"><td colspan="4">${esc(g.z.nom)}</td></tr>`+g.wins.map(w=>{const d=filmDims(w);return`<tr><td>${esc(w.label)}</td><td class="r num">${fmt(w.wcm,1)} × ${fmt(w.hcm,1)}</td><td class="r num">${fmt(d.w,1)} × ${fmt(d.h,1)}</td><td class="r num">${w.qty}</td></tr>`}).join('')).join('')}</tbody></table></div></details>
+   ${D.notes?`<p class="meta" style="margin:0;white-space:pre-line">${esc(D.notes)}</p>`:''}`}
+function devisText(){const T=totals(),D=S.devis,C=S.client,E=S.company;const L=[];const ln=l=>`- ${l.lib} : ${fmt(l.qte)} ${l.u} × ${eur(l.pu)} = ${eur(l.tot)} HT`;
+  L.push(`DEVIS N° ${D.num} – ${frDate(D.date)} (valable ${D.validite} jours)`,E.nom,[E.adresse,E.tel,E.email,E.siret&&'SIRET '+E.siret].filter(Boolean).join(' · '),'',`Client : ${C.nom}`,C.adresse,C.chantier&&'Chantier : '+C.chantier);
+  T.groups.forEach(g=>{L.push('',`${g.z.nom.toUpperCase()} (${TYPE[g.z.type]}) – ${g.s.n} vitrage(s)`);g.lines.forEach(l=>L.push(ln(l)))});
+  if(T.extras.length){L.push('','PRESTATIONS COMPLÉMENTAIRES');T.extras.forEach(l=>L.push(ln(l)))}
+  L.push('',`Sous-total HT : ${eur(T.sous)}`);if(T.rem)L.push(`Remise ${fmt(D.remise,1)} % : − ${eur(T.rem)}`);
+  L.push(`Total HT : ${eur(T.ht)}`,`TVA ${fmt(+D.tva,1)} % : ${eur(T.tva)}`,`TOTAL TTC : ${eur(T.ttc)}`);if(T.ac)L.push(`Acompte ${D.acompte} % à la commande : ${eur(T.ac)}`);
+  L.push('','Vitrages (largeur × hauteur, cm) :');T.groups.forEach(g=>{L.push(`  ${g.z.nom} :`);g.wins.forEach(w=>L.push(`    ${w.label} : ${fmt(w.wcm,1)} × ${fmt(w.hcm,1)} ×${w.qty}`))});
+  if(D.notes)L.push('',D.notes);return L.filter(x=>x!=null&&x!==false&&x!=='undefined').join('\n')}
+$('#copy').onclick=()=>{const t=devisText();const fb=()=>{const a=$('#copy-fallback');a.value=t;a.hidden=false;a.select();toast('Sélectionnez le texte ci-dessous pour le copier')};
+  try{navigator.clipboard.writeText(t).then(()=>toast('Devis copié'),fb)}catch(e){fb()}};
+function renderHist(){$('#hist').innerHTML=S.history.length?S.history.map((h,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn" data-h="${i}" style="flex:1;min-width:0"><span>${esc(h.devis.num)} · ${esc(h.client.nom)}</span><span class="num">${eur(h.ttc)}</span></button><button class="btn ghost danger" data-hdel="${i}" aria-label="Supprimer le devis ${esc(h.devis.num)}">✕</button></div>`).join(''):'<p class="hint">Aucun devis enregistré.</p>'}
+$('#hist').addEventListener('click',e=>{const b=e.target.closest('[data-hdel]');if(!b)return;e.stopPropagation();
+  if(!b.dataset.arm){b.dataset.arm=1;b.textContent='Supprimer ?';return}S.history.splice(+b.dataset.hdel,1);changed('hist');toast('Devis supprimé de l\'historique')},true);
+$('#save-devis').onclick=()=>{const T=totals();const snap=JSON.parse(JSON.stringify({client:S.client,zones:S.zones,zoneId:S.zoneId,pose:S.pose,roll:S.roll,devis:S.devis,ttc:T.ttc}));
+  const i=S.history.findIndex(h=>h.devis.num===S.devis.num);if(i>=0)S.history[i]=snap;else S.history.unshift(snap);changed('hist');toast('Devis enregistré')};
+$('#hist').onclick=e=>{const b=e.target.closest('[data-h]');if(!b)return;const h=migrate(JSON.parse(JSON.stringify(S.history[+b.dataset.h])));delete h.ttc;Object.assign(S,h);
+  changed('all');fitCanvas();toast('Devis '+S.devis.num+' rechargé')};
+$('#new-devis').onclick=()=>{const keep={company:S.company,films:S.films,history:S.history,pose:S.pose,roll:S.roll,filmId:S.filmId};S=Object.assign(defaults(),keep);
+  const z1=newZone('Façade','ext',S.filmId),z2=newZone('Intérieur','int',S.filmId);S.zones=[z1,z2];S.zoneId=z1.id;
+  S.client={nom:'',tel:'',adresse:'',chantier:'',email:''};S.devis.num=nextNum();changed('all');setTab('chantier');toast('Nouveau devis prêt')};
+
+/* ---------- Champs liés ---------- */
+function bindFields(){$$('[data-k]').forEach(el=>{const v=getK(el.dataset.k);if(document.activeElement!==el)el.value=v??''})}
+document.addEventListener('input',e=>{const el=e.target;if(!el.dataset?.k)return;setK(el.dataset.k,el.hasAttribute('data-num')?(parseFloat(el.value)||0):el.value);changed('soft')});
+document.addEventListener('change',e=>{if(e.target.dataset?.k)changed('soft')});
+$$('.mode').forEach(m=>m.addEventListener('click',e=>{if(e.target.tagName==='INPUT'&&e.target.type!=='radio')return;S.pose.mode=m.dataset.pose;changed('soft')}));
+function renderPoseMode(){$$('.mode').forEach(m=>{const on=m.dataset.pose===S.pose.mode;m.classList.toggle('on',on);m.querySelector('input[type=radio]').checked=on})}
+
+function changed(scope){
+  if(['win','zone','all'].includes(scope))renderWins();
+  if(['films','all'].includes(scope))renderFilms();
+  if(scope==='all'){renderExtras();bindFields()}
+  if(['hist','all'].includes(scope))renderHist();
+  const T=totals();
+  if(scope!=='soft')renderZones();else{S.zones.forEach(x=>{const el=$(`[data-z="${x.id}"] small`);if(el){const s=surf(zSel(x));el.textContent=`${TYPE[x.type]} · ${s.n} vitr. · ${fmt(s.vit)} m²`}})}
+  renderKpis(T);renderPoseMode();renderPoseSvg();renderRoll(T);renderDoc(T);draw();save()}
+function setTab(t){S.tab=t;$$('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));$$('section.tab').forEach(s=>s.hidden=s.id!=='t-'+t);if(t==='chantier')fitCanvas();save();window.scrollTo(0,0)}
+$$('nav.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+window.addEventListener('resize',()=>{if(!$('#t-chantier').hidden)fitCanvas()});
+
+changed('all');setMode('select');setTab(S.tab||'chantier');
+document.fonts?.ready.then(draw);
+</script>
+
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
+</body>
+</html>

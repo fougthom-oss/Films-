@@ -76,6 +76,8 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:var(-
 .zone.add{border-left-width:1px;border-style:dashed;place-content:center;color:var(--muted);min-width:90px}
 .tag{display:inline-block;font:600 11px/1 var(--f-body);text-transform:uppercase;letter-spacing:.05em;padding:3px 6px;border-radius:4px;background:var(--accent-soft);color:var(--ink)}
 .tag.int{background:var(--int-soft)}
+.zoombar{gap:6px}.zoombar .btn{min-height:36px;min-width:40px;padding:4px 10px;font-size:17px}.zoombar .btn.ghost{font-size:14px}
+#z-lvl{font-size:13px;min-width:48px;text-align:center}
 .stage{position:relative;border-radius:8px;overflow:hidden;background:var(--sunk);border:1px solid var(--line)}
 #cv{display:block;width:100%;height:auto}
 .calib{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;background:var(--sunk);border:1px dashed var(--mark);border-radius:8px;padding:10px}
@@ -180,16 +182,23 @@ details summary{cursor:pointer;font-weight:600}
     <div class="row" role="group" aria-label="Outil">
       <button class="btn" data-mode="select" aria-pressed="true">Sélectionner</button>
       <button class="btn" data-mode="rectify" aria-pressed="false">Redresser (4 coins)</button>
+      <button class="btn" data-mode="detect" aria-pressed="false">Détecter (toucher)</button>
       <button class="btn" data-mode="draw" aria-pressed="false">Tracer un vitrage</button>
       <button class="btn" data-mode="grid" aria-pressed="false">Répéter</button>
+      <button class="btn" data-mode="edit" aria-pressed="false">Déplacer / agrandir</button>
       <button class="btn" data-mode="calib" aria-pressed="false">Étalonner (trait)</button>
     </div>
     <p class="hint" id="mode-hint"></p>
+    <div class="row zoombar"><button class="btn" id="zm-out" aria-label="Dézoomer">−</button><span id="z-lvl" class="num">100 %</span><button class="btn" id="zm-in" aria-label="Zoomer">+</button><button class="btn ghost" id="zm-fit">Vue entière</button><span class="hint">Pincez avec deux doigts pour zoomer et vous déplacer.</span></div>
     <div class="stage"><canvas id="cv"></canvas></div>
+    <div class="row" id="edit-bar" hidden><b id="edit-name"></b><button class="btn" id="edit-same">Appliquer à la série</button><button class="btn" id="edit-snap">Caler la série sur la photo</button><button class="btn ghost danger" id="edit-del">Supprimer cette fenêtre</button></div>
     <div class="calib" id="rect-box" hidden style="grid-template-columns:1fr 1fr">
       <label class="f">Largeur réelle (cm)<input id="rect-w" type="number" inputmode="decimal" min="1" step="0.1"></label>
       <label class="f">Hauteur réelle (cm)<input id="rect-h" type="number" inputmode="decimal" min="1" step="0.1"></label>
       <div class="row" style="grid-column:1/-1"><button class="btn primary" id="rect-ok">Redresser la photo</button><button class="btn ghost" id="rect-reset">Recommencer les points</button></div>
+    </div>
+    <div class="calib" id="det-box" hidden style="grid-template-columns:1fr">
+      <label class="row" style="gap:10px;font-size:14px;flex-wrap:nowrap" for="det-merge"><input type="checkbox" id="det-merge"> <span>Fenêtre entière : regrouper les vantaux séparés par un montant (sinon, un vitrage par vitre)</span></label>
     </div>
     <div class="calib" id="grid-box" hidden style="grid-template-columns:1fr 1fr">
       <label class="f">Colonnes (fenêtres par étage)<input id="g-cols" type="number" min="1" value="5"></label>
@@ -368,6 +377,7 @@ details summary{cursor:pointer;font-weight:600}
     <summary>2. Prendre la photo</summary>
     <ul>
       <li><b class="k">Prendre une photo</b> ouvre l'appareil photo, <b class="k">Importer</b> la galerie.</li>
+      <li>Pour zoomer sur la photo, pincez avec deux doigts ou utilisez les boutons + et −. Avec deux doigts, vous déplacez aussi la vue. <b class="k">Vue entière</b> revient à la photo complète.</li>
       <li>Cadrez toute la façade ou tout le pan vitré. Pas besoin d'être parfaitement de face : l'étape suivante corrige la perspective.</li>
       <li>Évitez le grand angle extrême et les reflets qui cachent les montants des fenêtres.</li>
       <li>Une nouvelle photo remplace la précédente de la zone et efface les fenêtres tracées. Les vitrages saisis à la main sont conservés.</li>
@@ -380,7 +390,7 @@ details summary{cursor:pointer;font-weight:600}
     <ol>
       <li>Outil <b class="k">Redresser (4 coins)</b>.</li>
       <li>Touchez les 4 coins d'un rectangle dont vous connaissez la largeur et la hauteur réelles, dans l'ordre : <b>haut-gauche, haut-droit, bas-droit, bas-gauche</b>.</li>
-      <li>Glissez un point numéroté pour l'ajuster au besoin.</li>
+      <li>Chaque coin est marqué d'une <b>croix</b>, avec son numéro placé à côté pour ne pas cacher l'angle. <b>Zoomez</b> (pincez avec deux doigts, ou boutons + et −) pour viser l'angle exact, puis glissez la croix pour l'ajuster.</li>
       <li>Saisissez la largeur et la hauteur réelles en cm, puis <b class="k">Redresser la photo</b>.</li>
     </ol>
     <p><b>Quel rectangle choisir ?</b> Le plus grand possible : un bloc de plusieurs fenêtres, ou la façade entre deux repères (angles, joints de dilatation) mesurés au télémètre. Plus il est grand, plus les cotes estimées sont justes.</p>
@@ -388,12 +398,21 @@ details summary{cursor:pointer;font-weight:600}
   </details>
 
   <details>
-    <summary>4. Tracer et répéter les fenêtres</summary>
+    <summary>4. Détecter, tracer et répéter les fenêtres</summary>
+    <p><b>Détection automatique :</b> outil <b class="k">Détecter (toucher)</b>, puis touchez le milieu d'une vitre. L'appli suit la couleur de la vitre jusqu'au cadre et crée le vitrage à la bonne taille. Touchez un vitrage déjà placé pour le recaler.</p>
+    <ul>
+      <li>Par défaut, chaque vitre est un vitrage, comme pour la découpe du film. Cochez <b>Fenêtre entière</b> pour regrouper les vantaux séparés par un montant.</li>
+      <li>La détection marche le mieux sur une photo redressée, nette, sans reflet fort. Un reflet très marqué (arbre, immeuble en face) peut couper la vitre : zoomez et retouchez, ou corrigez avec <b class="k">Déplacer / agrandir</b>.</li>
+      <li>Avec une série répétée, <b class="k">Caler la série sur la photo</b> (dans Déplacer / agrandir) recale chaque fenêtre de la série sur sa vraie vitre.</li>
+    </ul>
+    <p><b>Tracé à la main :</b></p>
     <ol>
       <li>Outil <b class="k">Tracer un vitrage</b> : glissez le doigt d'un coin à l'autre de la partie vitrée (clair de vitrage, sans le cadre).</li>
       <li>Pour une façade régulière, tracez seulement la fenêtre en haut à gauche, puis prenez l'outil <b class="k">Répéter</b>.</li>
       <li>Réglez le nombre de <b>colonnes</b> (fenêtres par étage) et de <b>rangées</b> (étages).</li>
       <li>Glissez la copie jusqu'à la dernière fenêtre, en bas à droite. Toutes les fenêtres intermédiaires se répartissent régulièrement. Les emplacements déjà occupés sont ignorés.</li>
+      <li>Après la répétition, l'outil <b class="k">Déplacer / agrandir</b> s'active. Touchez une fenêtre pour la choisir, glissez-la pour la déplacer, et glissez un des carrés d'angle pour l'agrandir ou la réduire.</li>
+      <li>Corrigez une fenêtre de la série, puis touchez <b class="k">Appliquer à la série</b> : la même taille et le même décalage sont reportés sur toutes les fenêtres répétées (en pointillés).</li>
       <li>Les fenêtres d'un autre modèle (porte-fenêtre, imposte) se tracent à part, et peuvent aussi être répétées.</li>
     </ol>
   </details>
@@ -512,7 +531,7 @@ let S=load()||defaults();
 (S.history||[]).forEach(migrate);
 if(!S.devis.num)S.devis.num=nextNum();
 let saveT;
-function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Mémoire du navigateur pleine : photos trop lourdes, supprimez des devis de l\'historique')}},300)}
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(/quota/i.test(e.name+e.message))toast('Mémoire du navigateur pleine : photos trop lourdes, supprimez des devis de l\'historique')}},300)}
 function nextNum(){const d=new Date();const p='DEV-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+'-';const n=(S.history||[]).filter(h=>h.devis.num.startsWith(p)).length+1;return p+String(n).padStart(3,'0')}
 function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(t._t);t._t=setTimeout(()=>t.hidden=true,2800)}
 const getK=k=>k.split('.').reduce((o,p)=>o?.[p],S);
@@ -580,32 +599,50 @@ const dims=()=>{const s=src();return{W:s.naturalWidth||s.width,H:s.naturalHeight
 function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
 function fitCanvas(){const r=cv.parentElement.getBoundingClientRect();if(!r.width)return;const dpr=window.devicePixelRatio||1;const{W,H}=dims();const h=r.width*H/W;
   cv.width=Math.round(r.width*dpr);cv.height=Math.round(h*dpr);cv.style.height=h+'px';draw()}
-function draw(){const z=Z();const{W,H}=dims();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
-  const k=cv.width/W;ctx.setTransform(k,0,0,k,0,0);ctx.drawImage(src(),0,0,W,H);
-  const u=W/(cv.clientWidth||W);const acc=css(z.type==='int'?'--int':'--accent'),mark=css('--mark');
+let V={z:1,x:0,y:0,key:''};
+function U(){return dims().W/((cv.clientWidth||1)*V.z)}
+function clampV(){const{W,H}=dims();V.z=Math.min(8,Math.max(1,V.z));V.x=Math.min(Math.max(0,V.x),W-W/V.z);V.y=Math.min(Math.max(0,V.y),H-H/V.z)}
+const viewKey=z=>z.id+'|'+(z.photo?z.photo.length:z.sampleKind);
+function cross(x,y,u,col){const L=12*u;ctx.lineCap='round';for(const[lw,c]of[[4.5*u,'#000000b0'],[2*u,col]]){ctx.lineWidth=lw;ctx.strokeStyle=c;ctx.beginPath();ctx.moveTo(x-L,y);ctx.lineTo(x+L,y);ctx.moveTo(x,y-L);ctx.lineTo(x,y+L);ctx.stroke()}}
+function badge(x,y,t,u,col){ctx.font=`700 ${12*u}px IBM Plex Sans, sans-serif`;ctx.beginPath();ctx.arc(x,y,9*u,0,7);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=1.5*u;ctx.strokeStyle='#000000b0';ctx.stroke();
+  ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,x,y+.5*u);ctx.textAlign='left';ctx.textBaseline='alphabetic'}
+const OFF=[[-1,-1],[1,-1],[1,1],[-1,1]];
+const corners=w=>[[w.x,w.y],[w.x+w.w,w.y],[w.x+w.w,w.y+w.h],[w.x,w.y+w.h]];
+function draw(){const z=Z();const{W,H}=dims();if(V.key!==viewKey(z))V={z:1,x:0,y:0,key:viewKey(z)};clampV();
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
+  const k=cv.width/W*V.z;ctx.setTransform(k,0,0,k,-V.x*k,-V.y*k);ctx.drawImage(src(),0,0,W,H);
+  const u=U();const acc=css(z.type==='int'?'--int':'--accent'),mark=css('--mark');
   ctx.font=`600 ${13*u}px IBM Plex Sans, sans-serif`;
   for(const w of z.windows){if(w.w==null)continue;ctx.lineWidth=(w.sel?2.5:1.5)*u;
     if(w.sel){ctx.fillStyle=acc+'55';ctx.fillRect(w.x,w.y,w.w,w.h);ctx.setLineDash([]);ctx.strokeStyle=acc}else{ctx.setLineDash([6*u,4*u]);ctx.strokeStyle='#ffffffcc'}
-    ctx.strokeRect(w.x,w.y,w.w,w.h);ctx.setLineDash([]);
+    ctx.strokeRect(w.x,w.y,w.w,w.h);ctx.setLineDash([]);ctx.font=`600 ${13*u}px IBM Plex Sans, sans-serif`;
     const t=w.label,tw=ctx.measureText(t).width+8*u;ctx.fillStyle=w.sel?acc:'#00000099';ctx.fillRect(w.x,w.y,tw,18*u);ctx.fillStyle='#fff';ctx.fillText(t,w.x+4*u,w.y+13.5*u)}
-  const cl=pendingCalib||z.calib;if(cl&&(mode==='calib'||pendingCalib)){ctx.strokeStyle=mark;ctx.lineWidth=3*u;ctx.beginPath();ctx.moveTo(cl.x1,cl.y1);ctx.lineTo(cl.x2,cl.y2);ctx.stroke();
-    for(const p of[[cl.x1,cl.y1],[cl.x2,cl.y2]]){ctx.beginPath();ctx.arc(p[0],p[1],5*u,0,7);ctx.fillStyle=mark;ctx.fill()}
-    if(cl.cm&&!pendingCalib){ctx.fillStyle=mark;ctx.fillText(fmt(cl.cm,0)+' cm',(cl.x1+cl.x2)/2+6*u,(cl.y1+cl.y2)/2-6*u)}}
+  const cl=pendingCalib||z.calib;if(cl&&(mode==='calib'||pendingCalib)){ctx.strokeStyle=mark;ctx.lineWidth=2*u;ctx.beginPath();ctx.moveTo(cl.x1,cl.y1);ctx.lineTo(cl.x2,cl.y2);ctx.stroke();
+    cross(cl.x1,cl.y1,u,mark);cross(cl.x2,cl.y2,u,mark);
+    if(cl.cm&&!pendingCalib){ctx.font=`600 ${13*u}px IBM Plex Sans, sans-serif`;ctx.fillStyle=mark;ctx.fillText(fmt(cl.cm,0)+' cm',(cl.x1+cl.x2)/2+8*u,(cl.y1+cl.y2)/2-10*u)}}
   if(drag&&mode==='draw'){const r=normRect(drag);ctx.strokeStyle=mark;ctx.lineWidth=2*u;ctx.setLineDash([6*u,4*u]);ctx.strokeRect(r.x,r.y,r.w,r.h);ctx.setLineDash([])}
   const act=z.windows.find(w=>w.id===activeId&&w.w!=null);
-  if(act&&(mode==='grid'||mode==='draw')){ctx.strokeStyle=mark;ctx.lineWidth=3*u;ctx.strokeRect(act.x,act.y,act.w,act.h)}
+  if(act&&['grid','draw','edit','detect'].includes(mode)){ctx.strokeStyle=mark;ctx.lineWidth=3*u;ctx.strokeRect(act.x,act.y,act.w,act.h);
+    if(mode==='edit'){const hs=7*u;for(const[x,y]of corners(act)){ctx.fillStyle=mark;ctx.fillRect(x-hs,y-hs,2*hs,2*hs);ctx.lineWidth=1.5*u;ctx.strokeStyle='#000000b0';ctx.strokeRect(x-hs,y-hs,2*hs,2*hs)}
+      const s=series(act);ctx.setLineDash([4*u,4*u]);ctx.lineWidth=1.5*u;ctx.strokeStyle=mark;for(const w of s)ctx.strokeRect(w.x,w.y,w.w,w.h);ctx.setLineDash([])}}
   if(mode==='grid'&&act&&ghost){ctx.strokeStyle=mark;ctx.lineWidth=1.5*u;ctx.setLineDash([5*u,4*u]);for(const r of gridRects(act,ghost))ctx.strokeRect(r.x,r.y,act.w,act.h);ctx.setLineDash([])}
-  if(mode==='rectify'&&z.rectPts?.length){const P=z.rectPts;ctx.strokeStyle=mark;ctx.lineWidth=2.5*u;ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));if(P.length===4)ctx.closePath();ctx.stroke();
-    P.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,11*u,0,7);ctx.fillStyle=mark;ctx.fill();ctx.fillStyle='#000';ctx.textAlign='center';ctx.fillText(i+1,p.x,p.y+4.5*u);ctx.textAlign='left'})}}
-let activeId=null,ghost=null,gOff=null,rDrag=-1;
+  if(mode==='rectify'&&z.rectPts?.length){const P=z.rectPts;ctx.strokeStyle=mark;ctx.lineWidth=1.5*u;ctx.setLineDash([6*u,4*u]);ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));if(P.length===4)ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    P.forEach((p,i)=>{cross(p.x,p.y,u,mark);badge(p.x+OFF[i][0]*22*u,p.y+OFF[i][1]*22*u,i+1,u,mark)})}
+  $('#z-lvl').textContent=Math.round(V.z*100)+' %';renderEditBar()}
+let act0=null;
+function series(a){const z=Z();if(!a)return[];if(a.grp)return z.windows.filter(w=>w!==a&&w.grp===a.grp&&w.w!=null);
+  const o=act0&&act0.id===a.id?act0:a;return z.windows.filter(w=>w!==a&&w.w!=null&&Math.abs(w.w-o.w)<=o.w*.2&&Math.abs(w.h-o.h)<=o.h*.2)}
+function renderEditBar(){const z=Z(),a=mode==='edit'&&z.windows.find(w=>w.id===activeId&&w.w!=null);const b=$('#edit-bar');b.hidden=!a;if(!a)return;
+  const n=series(a).length;$('#edit-name').textContent='Fenêtre '+a.label;$('#edit-same').textContent=n?`Appliquer à la série (${n} autres)`:'Aucune fenêtre similaire';$('#edit-same').disabled=!n}
+let activeId=null,ghost=null,gOff=null;
 function gridRects(a,g){const C=Math.max(1,parseInt($('#g-cols').value)||1),R=Math.max(1,parseInt($('#g-rows').value)||1);const out=[];
   for(let r=0;r<R;r++)for(let c=0;c<C;c++){if(!r&&!c)continue;out.push({x:a.x+(C>1?c*(g.x-a.x)/(C-1):0),y:a.y+(R>1?r*(g.y-a.y)/(R-1):0)})}return out}
 function hitWin(z,p){return[...z.windows].reverse().find(w=>w.w!=null&&p.x>=w.x&&p.x<=w.x+w.w&&p.y>=w.y&&p.y<=w.y+w.h)}
 function applyGrid(){const z=Z(),a=z.windows.find(w=>w.id===activeId);if(!a||!ghost)return;if(Math.hypot(ghost.x-a.x,ghost.y-a.y)<a.w/3){ghost=null;draw();return}let n=0;const pre=z.type==='int'?'V':'F';
-  for(const r of gridRects(a,ghost)){const cx=r.x+a.w/2,cy=r.y+a.h/2;if(z.windows.some(w=>w.w!=null&&cx>=w.x&&cx<=w.x+w.w&&cy>=w.y&&cy<=w.y+w.h))continue;
-    const w={id:uid(),label:pre+(z.windows.length+1),x:r.x,y:r.y,w:a.w,h:a.h,wcm:a.wcm,hcm:a.hcm,measured:a.measured,from:a.measured?a.label:null,qty:1,sel:true};
+  a.grp??=uid();for(const r of gridRects(a,ghost)){const cx=r.x+a.w/2,cy=r.y+a.h/2;if(z.windows.some(w=>w.w!=null&&cx>=w.x&&cx<=w.x+w.w&&cy>=w.y&&cy<=w.y+w.h))continue;
+    const w={id:uid(),label:pre+(z.windows.length+1),x:r.x,y:r.y,w:a.w,h:a.h,wcm:a.wcm,hcm:a.hcm,measured:a.measured,from:a.measured?a.label:null,grp:a.grp,qty:1,sel:true};
     if(!a.measured)estimate(w,z);z.windows.push(w);n++}
-  ghost=null;changed('win');toast(n?`${n} vitrage(s) ajouté(s)${a.measured?' avec la cote de '+a.label:''}`:'Aucun vitrage ajouté (positions déjà occupées)')}
+  ghost=null;act0={id:a.id,x:a.x,y:a.y,w:a.w,h:a.h};setMode('edit');changed('win');toast(n?`${n} vitrage(s) ajouté(s). Ajustez une fenêtre puis « Appliquer à la série »`:'Aucun vitrage ajouté (positions déjà occupées)')}
 /* Homographie (4 points) */
 function solveH(s,d){const A=[],b=[];for(let i=0;i<4;i++){const[x,y]=s[i],[u,v]=d[i];A.push([x,y,1,0,0,0,-u*x,-u*y]);b.push(u);A.push([0,0,0,x,y,1,-v*x,-v*y]);b.push(v)}
   for(let i=0;i<8;i++){let p=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];[b[i],b[p]]=[b[p],b[i]];if(Math.abs(A[i][i])<1e-10)return null;
@@ -628,8 +665,8 @@ function rectify(){const z=Z(),RW=parseFloat(String($('#rect-w').value).replace(
     const X=c.map(q=>q[0]),Y=c.map(q=>q[1]);w.x=Math.min(...X);w.y=Math.min(...Y);w.w=Math.max(...X)-w.x;w.h=Math.max(...Y)-w.y});
   z.orig={photo:z.photo,sampleKind:z.sampleKind,scale:z.scale,calib:z.calib,I,x0,y0,k,windows:null};
   z.photo=out.toDataURL('image/jpeg',.82);z.sampleKind=null;z.scale=k;z.calib=null;z.rectPts=[];
-  z.windows.forEach(w=>{if(!w.measured)estimate(w,z)});$('#rect-box').hidden=true;setMode('draw');changed('win');fitCanvas();
-  toast('Photo redressée : toutes les fenêtres de cette façade sont à la même échelle')}
+  z.windows.forEach(w=>{if(!w.measured)estimate(w,z)});$('#rect-box').hidden=true;setMode('detect');changed('win');fitCanvas();
+  toast('Photo redressée. Touchez maintenant une vitre pour la détecter.')}
 function unrectify(){const z=Z(),o=z.orig;if(!o)return;
   z.windows.forEach(w=>{if(w.w==null)return;const c=[[w.x,w.y],[w.x+w.w,w.y],[w.x+w.w,w.y+w.h],[w.x,w.y+w.h]].map(([a,b])=>applyH(o.I,o.x0+a/o.k,o.y0+b/o.k));
     const X=c.map(q=>q[0]),Y=c.map(q=>q[1]);w.x=Math.min(...X);w.y=Math.min(...Y);w.w=Math.max(...X)-w.x;w.h=Math.max(...Y)-w.y});
@@ -643,33 +680,109 @@ function applySimilar(id){const z=Z(),a=z.windows.find(w=>w.id===id);if(!a||!(a.
     if(Math.abs(e.w-ref.w)<=ref.w*.1&&Math.abs(e.h-ref.h)<=ref.h*.1){w.wcm=a.wcm;w.hcm=a.hcm;w.measured=true;w.from=a.label;n++}}
   changed('win');toast(n?`Cote de ${a.label} copiée sur ${n} vitrage(s) de même taille`:'Aucun autre vitrage de taille proche (±10 %)')}
 function normRect(d){return{x:Math.min(d.x1,d.x2),y:Math.min(d.y1,d.y2),w:Math.abs(d.x2-d.x1),h:Math.abs(d.y2-d.y1)}}
-function pt(e){const r=cv.getBoundingClientRect();const{W,H}=dims();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
+function pt(e){const r=cv.getBoundingClientRect();const{W,H}=dims();return{x:V.x+(e.clientX-r.left)*W/(r.width*V.z),y:V.y+(e.clientY-r.top)*H/(r.height*V.z)}}
 const hints={select:'Touchez un vitrage pour l\'ajouter ou le retirer du devis.',
-  rectify:'Touchez les 4 coins d\'un rectangle connu de la façade, dans l\'ordre : haut-gauche, haut-droit, bas-droit, bas-gauche. Idéal : un grand rectangle (plusieurs fenêtres, ou la façade entre deux repères). Glissez un point pour l\'ajuster.',
+  rectify:'Touchez les 4 coins d\'un rectangle connu de la façade, dans l\'ordre : haut-gauche, haut-droit, bas-droit, bas-gauche. Zoomez pour viser l\'angle avec précision, puis glissez une croix pour l\'ajuster.',
+  detect:'Touchez le milieu d\'une vitre : son contour est détecté et le vitrage ajouté. Touchez un vitrage existant pour le recaler. Si le contour est faux, zoomez et retouchez, ou corrigez avec « Déplacer / agrandir ».',
   draw:'Glissez le doigt d\'un coin à l\'autre d\'un vitrage pour l\'ajouter.',
   grid:'Touchez la première fenêtre (en haut à gauche), réglez colonnes et rangées, puis glissez pour placer la dernière fenêtre (en bas à droite). Les autres se répartissent seules.',
+  edit:'Touchez une fenêtre pour la choisir. Glissez-la pour la déplacer, glissez un carré d\'angle pour l\'agrandir ou la réduire. « Appliquer à la série » reporte la correction sur les fenêtres répétées.',
   calib:'Tracez un segment sur une dimension connue, puis indiquez sa longueur réelle. Préférez « Redresser » si la photo n\'est pas prise de face.'};
-function setMode(m){mode=m;ghost=null;$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));$('#mode-hint').textContent=hints[m];cv.style.touchAction=m==='select'?'pan-y':'none';cv.style.cursor=m==='select'?'pointer':'crosshair';
-  $('#grid-box').hidden=m!=='grid';$('#rect-box').hidden=!(m==='rectify'&&(Z().rectPts||[]).length===4);if(m!=='calib')$('#calib-box').hidden=true;
-  if(m==='grid'&&!Z().windows.some(w=>w.id===activeId&&w.w!=null)){const f=Z().windows.find(w=>w.w!=null);activeId=f?.id||null}draw()}
-cv.addEventListener('pointerdown',e=>{const p=pt(e),z=Z();
-  if(mode==='select'){const w=hitWin(z,p);if(w){w.sel=!w.sel;activeId=w.id;changed('win')}return}
-  if(mode==='rectify'){z.rectPts??=[];const u=srcW_u()*22;rDrag=z.rectPts.findIndex(q=>Math.hypot(q.x-p.x,q.y-p.y)<u);
-    if(rDrag<0&&z.rectPts.length<4){z.rectPts.push(p);rDrag=z.rectPts.length-1}
-    if(rDrag>=0)cv.setPointerCapture(e.pointerId);$('#rect-box').hidden=z.rectPts.length<4;draw();return}
-  if(mode==='grid'){const h=hitWin(z,p),a=z.windows.find(w=>w.id===activeId);if(h&&h!==a){activeId=h.id;draw();return}if(!a){toast('Tracez d\'abord une fenêtre');return}
-    cv.setPointerCapture(e.pointerId);gOff=h===a?{x:p.x-a.x,y:p.y-a.y}:{x:a.w/2,y:a.h/2};ghost={x:p.x-gOff.x,y:p.y-gOff.y};draw();return}
-  cv.setPointerCapture(e.pointerId);drag={x1:p.x,y1:p.y,x2:p.x,y2:p.y};if(mode==='calib'){pendingCalib={...drag};$('#calib-box').hidden=true}});
-function srcW_u(){return srcW_()/(cv.clientWidth||1)}function srcW_(){return dims().W}
-cv.addEventListener('pointermove',e=>{const p=pt(e);
-  if(mode==='rectify'&&rDrag>=0){Z().rectPts[rDrag]=p;draw();return}
-  if(mode==='grid'&&gOff&&ghost){ghost={x:p.x-gOff.x,y:p.y-gOff.y};draw();return}
-  if(!drag)return;drag.x2=p.x;drag.y2=p.y;if(mode==='calib')pendingCalib={...drag};draw()});
-cv.addEventListener('pointerup',()=>{if(mode==='rectify'){rDrag=-1;save();return}
-  if(mode==='grid'&&gOff){gOff=null;applyGrid();return}
-  if(!drag)return;const d=drag,z=Z();drag=null;
-  if(mode==='draw'){const r=normRect(d);if(r.w>12&&r.h>12){const pre=z.type==='int'?'V':'F';const w={id:uid(),label:pre+(z.windows.length+1),...r,wcm:0,hcm:0,measured:false,qty:1,sel:true};estimate(w,z);z.windows.push(w);activeId=w.id;changed('win')}else draw()}
-  else if(mode==='calib'){if(Math.hypot(d.x2-d.x1,d.y2-d.y1)>10){$('#calib-box').hidden=false;$('#calib-cm').value='';$('#calib-cm').focus()}else{pendingCalib=null;draw()}}});
+function setMode(m){mode=m;ghost=null;$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));$('#mode-hint').textContent=hints[m];cv.style.touchAction='none';cv.style.cursor=m==='select'||m==='edit'?'pointer':'crosshair';
+  $('#grid-box').hidden=m!=='grid';$('#det-box').hidden=m!=='detect';$('#det-merge').checked=!!S.detMerge;$('#rect-box').hidden=!(m==='rectify'&&(Z().rectPts||[]).length===4);if(m!=='calib')$('#calib-box').hidden=true;
+  if((m==='grid'||m==='edit')&&!Z().windows.some(w=>w.id===activeId&&w.w!=null)){const f=Z().windows.find(w=>w.w!=null);activeId=f?.id||null}
+  const a=Z().windows.find(w=>w.id===activeId);if(a&&(!act0||act0.id!==a.id))act0={id:a.id,x:a.x,y:a.y,w:a.w,h:a.h};draw()}
+const ptrs=new Map();let pinch=null,dead=false,g=null;
+function cancelGesture(){if(g&&(g.kind==='move'||g.kind==='size'))Object.assign(g.w,g.orig);g=null;drag=null;ghost=null;gOff=null;if(mode==='calib')pendingCalib=null;draw()}
+function two(){return[...ptrs.values()].slice(0,2)}
+function startPinch(){const[a,b]=two(),r=cv.getBoundingClientRect(),cx=(a.x+b.x)/2,cy=(a.y+b.y)/2,s=dims().W/(r.width*V.z);
+  pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1,z0:V.z,ix:V.x+(cx-r.left)*s,iy:V.y+(cy-r.top)*s}}
+function movePinch(){const[a,b]=two(),r=cv.getBoundingClientRect(),cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;
+  V.z=Math.min(8,Math.max(1,pinch.z0*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d));const s=dims().W/(r.width*V.z);V.x=pinch.ix-(cx-r.left)*s;V.y=pinch.iy-(cy-r.top)*s;draw()}
+function zoomAt(f,ix,iy){const r=cv.getBoundingClientRect(),s0=dims().W/(r.width*V.z),sx=(ix-V.x)/s0,sy=(iy-V.y)/s0;V.z=Math.min(8,Math.max(1,V.z*f));const s=dims().W/(r.width*V.z);V.x=ix-sx*s;V.y=iy-sy*s;draw()}
+function zoomCenter(f){const{W,H}=dims();zoomAt(f,V.x+W/(2*V.z),V.y+H/(2*V.z))}
+$('#zm-in').onclick=()=>zoomCenter(1.6);$('#zm-out').onclick=()=>zoomCenter(1/1.6);$('#zm-fit').onclick=()=>{V.z=1;V.x=0;V.y=0;draw()};
+cv.addEventListener('wheel',e=>{e.preventDefault();const p=pt(e);zoomAt(e.deltaY<0?1.2:1/1.2,p.x,p.y)},{passive:false});
+cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(_){}
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size>=2){cancelGesture();dead=true;startPinch();return}
+  if(dead)return;
+  const p=pt(e),z=Z(),u=U();g={sx:e.clientX,sy:e.clientY,moved:false,p0:p,vx:V.x,vy:V.y,kind:'pan'};
+  if(mode==='select'){g.hit=hitWin(z,p);return}
+  if(mode==='detect')return;
+  if(mode==='rectify'){z.rectPts??=[];const i=z.rectPts.findIndex(q=>Math.hypot(q.x-p.x,q.y-p.y)<26*u);if(i>=0){g.kind='rpt';g.i=i}else g.kind='rtap';return}
+  if(mode==='edit'){const a=z.windows.find(w=>w.id===activeId&&w.w!=null);
+    if(a){const c=corners(a).findIndex(([x,y])=>Math.hypot(x-p.x,y-p.y)<24*u);if(c>=0){Object.assign(g,{kind:'size',w:a,c,orig:{x:a.x,y:a.y,w:a.w,h:a.h}});return}}
+    const h=hitWin(z,p);if(h){if(h.id!==activeId){activeId=h.id;act0={id:h.id,x:h.x,y:h.y,w:h.w,h:h.h}}Object.assign(g,{kind:'move',w:h,orig:{x:h.x,y:h.y,w:h.w,h:h.h}});draw();return}
+    g.tapClear=true;return}
+  if(mode==='grid'){const h=hitWin(z,p),a=z.windows.find(w=>w.id===activeId);if(h&&h!==a){activeId=h.id;g=null;draw();return}if(!a)return;
+    gOff=h===a?{x:p.x-a.x,y:p.y-a.y}:{x:a.w/2,y:a.h/2};ghost={x:p.x-gOff.x,y:p.y-gOff.y};g.kind='ghost';draw();return}
+  g.kind='drag';drag={x1:p.x,y1:p.y,x2:p.x,y2:p.y};if(mode==='calib'){pendingCalib={...drag};$('#calib-box').hidden=true}});
+cv.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch){movePinch();return}if(dead||!g)return;
+  if(Math.hypot(e.clientX-g.sx,e.clientY-g.sy)>8)g.moved=true;const p=pt(e);
+  if(g.kind==='rtap'&&g.moved)g.kind='pan';
+  if(g.kind==='pan'){if(g.moved&&V.z>1){const r=cv.getBoundingClientRect(),s=dims().W/(r.width*V.z);V.x=g.vx-(e.clientX-g.sx)*s;V.y=g.vy-(e.clientY-g.sy)*s;draw()}}
+  else if(g.kind==='rpt'){Z().rectPts[g.i]=p;draw()}
+  else if(g.kind==='move'){const o=g.orig;g.w.x=o.x+p.x-g.p0.x;g.w.y=o.y+p.y-g.p0.y;draw()}
+  else if(g.kind==='size'){const f=corners(g.orig)[(g.c+2)%4],m=8*U();const x1=Math.min(f[0],p.x),x2=Math.max(f[0],p.x),y1=Math.min(f[1],p.y),y2=Math.max(f[1],p.y);
+    Object.assign(g.w,{x:x1,y:y1,w:Math.max(m,x2-x1),h:Math.max(m,y2-y1)});draw()}
+  else if(g.kind==='ghost'){ghost={x:p.x-gOff.x,y:p.y-gOff.y};draw()}
+  else if(g.kind==='drag'){drag.x2=p.x;drag.y2=p.y;if(mode==='calib')pendingCalib={...drag};draw()}});
+function endPtr(e){if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);
+  if(pinch||dead){if(ptrs.size<2)pinch=null;if(!ptrs.size)dead=false;return}
+  const G=g;g=null;if(!G)return;const z=Z();
+  if(e.type==='pointercancel'){g=G;cancelGesture();return}
+  if(G.kind==='pan'){if(!G.moved){if(mode==='detect')doDetect(G.p0);else if(mode==='select'&&G.hit){G.hit.sel=!G.hit.sel;activeId=G.hit.id;changed('win')}else if(G.tapClear){activeId=null;draw()}}}
+  else if(G.kind==='rtap'){if(z.rectPts.length<4)z.rectPts.push(G.p0);$('#rect-box').hidden=z.rectPts.length<4;save();draw()}
+  else if(G.kind==='rpt')save();
+  else if(G.kind==='move'||G.kind==='size'){if(!G.moved){Object.assign(G.w,G.orig);draw()}else{if(!G.w.measured)estimate(G.w,z);changed('win')}}
+  else if(G.kind==='ghost'){gOff=null;applyGrid()}
+  else if(G.kind==='drag'){const d=drag;drag=null;if(!d)return;
+    if(mode==='draw'){const r=normRect(d);if(r.w>12*U()&&r.h>12*U()){const pre=z.type==='int'?'V':'F';const w={id:uid(),label:pre+(z.windows.length+1),...r,wcm:0,hcm:0,measured:false,qty:1,sel:true};estimate(w,z);z.windows.push(w);activeId=w.id;changed('win')}else draw()}
+    else if(mode==='calib'){if(Math.hypot(d.x2-d.x1,d.y2-d.y1)>10*U()){$('#calib-box').hidden=false;$('#calib-cm').value='';$('#calib-cm').focus()}else{pendingCalib=null;draw()}}}}
+cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
+/* ---------- Détection automatique ---------- */
+let pixC=null;
+function pix(){const z=Z(),key=viewKey(z),S0=src();if(pixC&&pixC.k===key&&pixC.s===S0)return pixC;const{W,H}=dims();const f=Math.min(1,1000/Math.max(W,H));const w=Math.max(1,Math.round(W*f)),h=Math.max(1,Math.round(H*f));
+  const d=mk(w,h,c=>c.drawImage(S0,0,0,w,h)).getContext('2d').getImageData(0,0,w,h).data;const R=new Float32Array(w*h),G=new Float32Array(w*h),B=new Float32Array(w*h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let a=0,b=0,c=0,n=0;for(let dy=-1;dy<=1;dy++){const yy=y+dy;if(yy<0||yy>=h)continue;for(let dx=-1;dx<=1;dx++){const xx=x+dx;if(xx<0||xx>=w)continue;const j=(yy*w+xx)*4;a+=d[j];b+=d[j+1];c+=d[j+2];n++}}const i=y*w+x;R[i]=a/n;G[i]=b/n;B[i]=c/n}
+  return pixC={k:key,s:S0,f,w,h,R,G,B}}
+function floodRect(P,sx,sy){const{w,h,R,G,B}=P;if(sx<0||sy<0||sx>=w||sy>=h)return null;
+  let mr=0,mg=0,mb=0,n=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const x=sx+dx,y=sy+dy;if(x<0||y<0||x>=w||y>=h)continue;const i=y*w+x;mr+=R[i];mg+=G[i];mb+=B[i];n++}mr/=n;mg/=n;mb/=n;
+  const TL=12,TS=95,max=w*h*.35,seen=new Uint8Array(w*h),rows=new Int32Array(h),cols=new Int32Array(w);const i0=sy*w+sx,st=[i0];seen[i0]=1;let cnt=0;
+  while(st.length){const i=st.pop();if(++cnt>max)return null;const x=i%w,y=(i-x)/w;rows[y]++;cols[x]++;
+    for(const j of[x>0?i-1:-1,x<w-1?i+1:-1,y>0?i-w:-1,y<h-1?i+w:-1]){if(j<0||seen[j])continue;const a=R[j]-R[i],b=G[j]-G[i],c=B[j]-B[i];if(a*a+b*b+c*c>TL*TL)continue;
+      const e=R[j]-mr,f=G[j]-mg,g=B[j]-mb;if(e*e+f*f+g*g>TS*TS)continue;seen[j]=1;st.push(j)}}
+  if(cnt<30)return null;
+  const band=arr=>{let m=0;for(const v of arr)if(v>m)m=v;const t=m*.35;let a=0,b=arr.length-1;while(a<b&&arr[a]<t)a++;while(b>a&&arr[b]<t)b--;return[a,b]};
+  const[y0,y1]=band(rows),[x0,x1]=band(cols);if(x1-x0<4||y1-y0<4)return null;return{x0,x1,y0,y1,mr,mg,mb}}
+function detect(px,py,merge){const P=pix(),f=P.f;let r=floodRect(P,Math.round(px*f),Math.round(py*f));if(!r)return null;const ref=r;
+  const sim=(x,y)=>{const i=y*P.w+x,a=P.R[i]-ref.mr,b=P.G[i]-ref.mg,c=P.B[i]-ref.mb;return a*a+b*b+c*c<55*55};let floods=0;
+  if(merge)for(let it=0;it<10&&floods<40;it++){let grew=false;const W0=r.x1-r.x0+1,H0=r.y1-r.y0+1,pr=[];
+    for(const t of[.3,.5,.7]){const yy=Math.round(r.y0+t*H0),xx=Math.round(r.x0+t*W0);
+      for(let d=2;d<=Math.max(4,W0*.15);d++){pr.push([r.x1+d,yy,'h',d],[r.x0-d,yy,'h',d])}
+      for(let d=2;d<=Math.max(4,H0*.15);d++){pr.push([xx,r.y1+d,'v',d],[xx,r.y0-d,'v',d])}}
+    pr.sort((a,b)=>a[3]-b[3]);
+    for(const[x,y,o]of pr){if(x<0||y<0||x>=P.w||y>=P.h||!sim(x,y))continue;if(++floods>40)break;const q=floodRect(P,x,y);if(!q)continue;
+      if(q.x0>=r.x0&&q.x1<=r.x1&&q.y0>=r.y0&&q.y1<=r.y1)continue;
+      const ok=o==='h'?Math.abs((q.y1-q.y0)-(r.y1-r.y0))<=H0*.2:Math.abs((q.x1-q.x0)-(r.x1-r.x0))<=W0*.2;if(!ok)continue;
+      r={...r,x0:Math.min(r.x0,q.x0),x1:Math.max(r.x1,q.x1),y0:Math.min(r.y0,q.y0),y1:Math.max(r.y1,q.y1)};grew=true;break}
+    if(!grew)break}
+  if((r.x1-r.x0)*(r.y1-r.y0)>P.w*P.h*.25)return null;
+  return{x:(r.x0-1.8)/f,y:(r.y0-1.8)/f,w:(r.x1-r.x0+3.6)/f,h:(r.y1-r.y0+3.6)/f}}
+function doDetect(p){const z=Z(),r=detect(p.x,p.y,!!S.detMerge);if(!r){toast('Contour non trouvé. Zoomez et touchez le centre de la vitre, ou tracez-la à la main.');return}
+  let w=hitWin(z,p);const pre=z.type==='int'?'V':'F';
+  if(w)Object.assign(w,r);else{w={id:uid(),label:pre+(z.windows.length+1),...r,wcm:0,hcm:0,measured:false,qty:1,sel:true};z.windows.push(w)}
+  if(!w.measured)estimate(w,z);activeId=w.id;act0={id:w.id,x:w.x,y:w.y,w:w.w,h:w.h};changed('win');
+  toast(z.scale?`${w.label} : ${fmt(w.measured?w.wcm:r.w/z.scale,0)} × ${fmt(w.measured?w.hcm:r.h/z.scale,0)} cm${w.measured?' (cote mesurée conservée)':' (estimé)'}`:`${w.label} détectée. Redressez ou étalonnez la photo pour obtenir les cotes.`)}
+$('#det-merge').onchange=e=>{S.detMerge=e.target.checked;save()};
+$('#edit-snap').onclick=()=>{const z=Z(),a=z.windows.find(w=>w.id===activeId);if(!a)return;let ok=0,ko=0;
+  for(const w of[a,...series(a)]){const r=detect(w.x+w.w/2,w.y+w.h/2,!!S.detMerge);if(r&&Math.abs(r.w-w.w)<=w.w*.3&&Math.abs(r.h-w.h)<=w.h*.3){Object.assign(w,r);if(!w.measured)estimate(w,z);ok++}else ko++}
+  act0={id:a.id,x:a.x,y:a.y,w:a.w,h:a.h};changed('win');toast(`${ok} fenêtre(s) calée(s) sur la photo${ko?`, ${ko} laissée(s) telle(s) quelle(s)`:''}`)};
+$('#edit-same').onclick=()=>{const z=Z(),a=z.windows.find(w=>w.id===activeId);if(!a)return;const s=series(a);const o=act0&&act0.id===a.id?act0:a;const dx=a.x-o.x,dy=a.y-o.y;
+  for(const w of s){w.x+=dx;w.y+=dy;w.w=a.w;w.h=a.h;if(!w.measured)estimate(w,z)}act0={id:a.id,x:a.x,y:a.y,w:a.w,h:a.h};changed('win');toast(`Correction de ${a.label} appliquée à ${s.length} fenêtre(s)`)};
+$('#edit-del').onclick=()=>{const z=Z();const a=z.windows.find(w=>w.id===activeId);if(!a)return;z.windows=z.windows.filter(w=>w!==a);activeId=null;changed('win');toast(a.label+' supprimée')};
 $('#calib-ok').onclick=()=>{const cm=parseFloat(String($('#calib-cm').value).replace(',','.'));if(!(cm>0)||!pendingCalib){toast('Indiquez une longueur en cm');return}
   const z=Z(),c=pendingCalib;z.calib={...c,cm};z.scale=Math.hypot(c.x2-c.x1,c.y2-c.y1)/cm;pendingCalib=null;$('#calib-box').hidden=true;
   z.windows.forEach(w=>{if(!w.measured)estimate(w,z)});toast('Étalonnage enregistré, cotes estimées mises à jour');changed('win')};
